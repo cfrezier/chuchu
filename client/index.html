@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang='fr'>
+<head>
+    <meta charset='utf-8'>
+    <title>Liars !</title>
+    <style type="text/css">
+
+    </style>
+</head>
+
+<body onload="load()">
+
+<div id="startPanel">
+    <label for="name">Nom:</label><input id="name" value="">
+    <label for="code">Code d'accès:</label><input id="code" value="">
+    <button onclick="iAm('player')">Jouer !</button>
+    <button onclick="iAm('presenter')">Device de présentation</button>
+</div>
+
+<div id="controllerPanel">
+    <div id="move" style="display:inline-block;width: 48%">
+        <div id="move0">Top</div>
+        <div id="move1">Down</div>
+        <div id="move2">Left</div>
+        <div id="move3">Right</div>
+    </div>
+    <div id="place" style="display:inline-block;width: 48%">
+        <div id="place0">Top</div>
+        <div id="place1">Down</div>
+        <div id="place2">Left</div>
+        <div id="place3">Right</div>
+    </div>
+</div>
+
+<script src="../node_modules/socket.io-client/dist/socket.io.js"></script>
+<script type="text/javascript" src="./js/player.js"></script>
+<script type="text/javascript" src="./js/presenter.js"></script>
+<script type="text/javascript" src="./js/client.js"></script>
+</body>
+
+</html>
