@@ -73,14 +73,12 @@
         this.name = name.toUpperCase();
         this.socket = socket;
         this.id = playerIdGenerator++;
-        this.game = game;
 
+        this.color = "#FF0000";
         this.count = 0;
-        this.goal= { x: 0, y : 0 };
-        this.cursor = { x: 0, y : 0 };
+        this.goal = {x: 0, y: 0};
+        this.cursor = {x: 0, y: 0};
         this.arrows = [];
-        this.mouses = [];
-        this.cats = [];
     }
 
     function getPlayerById(id) {
@@ -99,6 +97,9 @@
         this.code = this.generateCode();
         this.presenterSocket = socket;
         this.players = [];
+        this.mouses = [];
+        this.cats = [];
+        this.end = false;
     }
 
     function getGameByCode(code) {
@@ -141,8 +142,9 @@
         this.state = "playing";
         this.broadcast("start");
 
-
-
+        setTimeout(function() {
+            this.executeStep();
+        }, 10);
     };
 
     Game.prototype.broadcast = function (evt, obj) {
@@ -150,6 +152,15 @@
         this.players.forEach(function (player) {
             player.socket.emit(evt, obj);
         });
+    };
+
+    Game.prototype.executeStep = function() {
+        // Boucle main de calcul du jeu
+
+
+
+        // Envoi de la game recalculée pour affichage
+        this.broadcast("draw", JSON.stringify(this));
     };
 
 
