@@ -19,13 +19,13 @@ module.exports = (function () {
 
         var player = this;
         this.socket.on('player:move', function (obj) {
-            player.startMove(obj)
+            player.startMove(obj);
         });
-        this.socket.on('player:move', function (obj) {
-            player.endMove(obj)
+        this.socket.on('player:end:move', function (obj) {
+            player.endMove(obj);
         });
-        this.socket.on('player:place', function (obj) {
-            player.createArrow(obj)
+        this.socket.on('player:end:place', function (obj) {
+            player.createArrow(obj);
         });
     }
 
@@ -36,6 +36,7 @@ module.exports = (function () {
             color: this.color,
             score: this.score,
             cursor: this.cursor,
+            goal: this.goal,
             arrows: this.arrows.map(function(arrow) {
                 arrow.drawData()
             })
@@ -58,7 +59,7 @@ module.exports = (function () {
     };
 
     Player.prototype.move = function (obj) {
-        this.or = -1;
+        utils.moveObject(obj);
     };
 
     Player.prototype.scorePoints = function (cats, mouses) {
