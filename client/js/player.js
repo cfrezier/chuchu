@@ -4,8 +4,6 @@ var Player = (function () {
         this.name = name.toUpperCase();
         this.code = code.toUpperCase();
         this.id = -1;
-        this.ctxt = null;
-        this.actualLie = undefined;
     };
 
     Player.prototype.execute = function (ctxt) {
