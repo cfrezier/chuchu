@@ -17,7 +17,7 @@ var __prep = (function (Presenter, Player, PORT) {
                 executor.execute(this);
             },
             showPanel: function (type) {
-                var allPanels = ["#startPanel", "#controllerPanel"];
+                var allPanels = ["#startPanel", "#controllerPanel", "#codePanel", "#waitPanel", "#controllerPanel"];
                 allPanels.forEach(function (panel) {
                     document.querySelector(panel).style.display = "none";
                 });

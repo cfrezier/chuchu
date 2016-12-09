@@ -28,12 +28,17 @@ var Presenter = (function () {
         });
 
         this.socket.on('draw', function (game) {
-            // Draw cursors
             game.players.forEach(function(player) {
-                presenter.ctxt.fillText(player.name, player.cursor.x, player.cursor.y)
+                // Draw cursors
+                presenter.ctxt.fillText(player.name, player.cursor.x, player.cursor.y);
+
+                // Draw goals
+                presenter.ctxt.fillStyle = player.color;
+                presenter.ctxt.beginPath();
+                presenter.ctxt.arc(player.goal.x, player.goal.y, 10, 0, 2*Math.PI);
+                presenter.ctxt.stroke();
             });
 
-            // Draw goals
             // Draw Mouses
             // Draw Cats
 
