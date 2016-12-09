@@ -22,8 +22,8 @@ var Player = (function () {
         });
 
         this.socket.on('start', function() {
-            this.createControllerButtons();
             ctxt.showPanel("controller");
+            player.createControllerButtons();
         })
     };
 
@@ -33,7 +33,7 @@ var Player = (function () {
         for (var k = 0; k < types.length; k++) {
             var kind = types[k];
 
-            for (var i = 0; i < 5; i++) {
+            for (var i = 0; i < 4; i++) {
                 (function(i, kind) {
                     var div = document.getElementById(kind + i);
                     div.addEventListener('touchstart', function (e) {

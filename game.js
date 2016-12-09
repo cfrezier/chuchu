@@ -14,6 +14,14 @@ module.exports = (function () {
         this.end = false;
     }
 
+    Game.prototype.drawData = function() {
+        return {
+            players : this.players.map(function(player) { return player.drawData()}),
+            mouses: this.mouses,
+            cats: this.cats
+        }
+    };
+
     Game.prototype.generateCode = function (games) {
         var valid = false;
         while (!valid) {
@@ -100,7 +108,7 @@ module.exports = (function () {
         game.cats = game.cats.filter(filterEaten);
 
         // Envoi de la game recalculée pour affichage
-        this.broadcast("draw", JSON.stringify(this));
+        this.broadcast("draw", this.drawData());
 
         this.planNextStep();
     };

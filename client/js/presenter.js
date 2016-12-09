@@ -24,12 +24,10 @@ var Presenter = (function () {
         });
 
         this.socket.on('start', function (data) {
-            ctxt.showPanel("cardPanel");
+            ctxt.showPanel("card");
         });
 
-        this.socket.on('draw', function (gam) {
-            var game = JSON.parse(gam);
-
+        this.socket.on('draw', function (game) {
             // Draw cursors
             game.players.forEach(function(player) {
                 presenter.ctxt.fillText(player.name, player.cursor.x, player.cursor.y)

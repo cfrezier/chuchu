@@ -29,6 +29,19 @@ module.exports = (function () {
         });
     }
 
+    Player.prototype.drawData = function () {
+        return {
+            name: this.name,
+            id: this.id,
+            color: this.color,
+            score: this.score,
+            cursor: this.cursor,
+            arrows: this.arrows.map(function(arrow) {
+                arrow.drawData()
+            })
+        };
+    };
+
     Player.prototype.createArrow = function (obj) {
         if (this.arrows.length >= 3) {
             this.arrows.shift();
