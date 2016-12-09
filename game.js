@@ -1,4 +1,7 @@
 var utils = require('./utils.js');
+var Mouse = require('./mouse.js');
+var Cat = require('./cat.js');
+var Player = require('./player.js');
 
 module.exports = (function () {
 
@@ -28,11 +31,17 @@ module.exports = (function () {
         return result;
     }
 
+    Game.prototype.getPlayerBySocket = function(socket) {
+        return this.players.filter(function (player) {
+            return player.socket === socket;
+        })[0];
+    };
+
     Game.prototype.createPlayer = function (name, socket) {
         var player = new Player(name, socket, this);
         this.players.push(player);
-        this.players.push(player);
         socket.emit('identify', {"id": player.id});
+        return player;
     };
 
     Game.prototype.getPlayerByName = function (name) {
@@ -45,8 +54,13 @@ module.exports = (function () {
         this.state = "playing";
         this.broadcast("start");
 
+        this.planNextStep();
+        return this;
+    };
+    Game.prototype.planNextStep = function() {
+        var game = this;
         setTimeout(function () {
-            this.executeStep();
+            game.executeStep();
         }, 10);
     };
 
@@ -80,15 +94,15 @@ module.exports = (function () {
 
         // Les souris et les chats montent dans les goals
         game.players.forEach(function (player) {
-            player.goal(game.mouses, game.cats);
+            player.scorePoints(game.mouses, game.cats);
         });
         game.mouses = game.mouses.filter(filterEaten);
         game.cats = game.cats.filter(filterEaten);
 
-        // Fin ?
-
         // Envoi de la game recalculée pour affichage
         this.broadcast("draw", JSON.stringify(this));
+
+        this.planNextStep();
     };
 
     function filterEaten(obj) {

@@ -37,15 +37,12 @@ var __prep = (function (Presenter, Player, PORT) {
 })(Presenter, Player, 8001);
 
 function load() {
+    __prep.showPanel("start");
     __prep.connect();
 }
 
 function iAm(what) {
     __prep.iAm(what);
-}
-
-function lie() {
-    __prep.lie();
 }
 
 function start() {

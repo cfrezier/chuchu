@@ -1,4 +1,5 @@
 var utils = require('./utils.js');
+var Arrow = require('./arrow.js');
 
 module.exports = (function () {
     var playerIdGenerator = 0;
@@ -47,7 +48,7 @@ module.exports = (function () {
         this.or = -1;
     };
 
-    Player.prototype.goal = function (cats, mouses) {
+    Player.prototype.scorePoints = function (cats, mouses) {
         var player = this;
 
         cats.forEach(function (cat) {
@@ -66,7 +67,7 @@ module.exports = (function () {
     };
 
     Player.prototype.move = function () {
-        moveObject(this.cursor);
+        utils.moveObject(this.cursor);
     };
 
     return Player;

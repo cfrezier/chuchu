@@ -1,14 +1,9 @@
 (function (DISPLAY_TIMEOUT, ANSWER_TIMEOUT, SHORT_DISPLAY_TIMEOUT, HTTP_PORT) {
     var games = [];
-    var players = [];
 
     require('./array.js');
     var utils = require('./utils.js');
     var Game = require('./game.js');
-    var Player = require('./player.js');
-    var Cat = require('./cat.js');
-    var Mouse = require('./mouse.js');
-    var Arrow = require('./arrow.js');
 
     var express = require('express');
     var app = express();
@@ -36,8 +31,8 @@
 
     io.sockets.on('connection', function (socket) {
         socket.on('iam:presenter', function (data) {
-            var game = new Game(socket);
-            games.push(game, games);
+            var game = new Game(socket, games);
+            games.push(game);
 
             game.presenterSocket.emit('display:code', game.code);
             console.log("New Game: Presenter: " + game.code);
@@ -54,7 +49,7 @@
                     player.socket = socket;
                 } else {
                     game.createPlayer(data.name, socket);
-                    game.presenterSocket.emit('display:player', {"name": data.name, "id": getPlayerBySocket(socket).id});
+                    game.presenterSocket.emit('display:player', {"name": data.name, "id": game.getPlayerBySocket(socket).id});
                     console.log("[Game" + game.code + "] New Player: " + data.name);
                 }
             }
@@ -65,12 +60,6 @@
             console.log("[Game" + game.code + "] Game Start !");
         });
     });
-
-    function getPlayerBySocket(socket) {
-        return players.filter(function (player) {
-            return player.socket === socket;
-        })[0];
-    }
 
     function getGameByCode(code) {
         return games.filter(function (game) {
