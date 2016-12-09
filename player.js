@@ -15,8 +15,6 @@ module.exports = (function () {
         this.cursor = {x: 0, y: 0, or: -1};
         this.arrows = [];
 
-        this.or = -1;
-
         var player = this;
         this.socket.on('player:move', function (obj) {
             player.startMove(obj);
@@ -51,15 +49,11 @@ module.exports = (function () {
     };
 
     Player.prototype.startMove = function (obj) {
-        this.or = obj.move;
+        this.cursor.or = obj.move;
     };
 
     Player.prototype.endMove = function (obj) {
-        this.or = -1;
-    };
-
-    Player.prototype.move = function (obj) {
-        utils.moveObject(obj);
+        this.cursor.or = -1;
     };
 
     Player.prototype.scorePoints = function (cats, mouses) {

@@ -3,8 +3,12 @@ var MAX_WIDTH = 300;
 
 function increment(start, increment) {
     var result = start + increment;
-    if(result < 0) { result = 0;}
-    if(result > MAX_WIDTH) { result = MAX_WIDTH;}
+    if (result < 0) {
+        result = 0;
+    }
+    if (result > MAX_WIDTH) {
+        result = MAX_WIDTH;
+    }
     return result;
 }
 
@@ -46,8 +50,8 @@ function moveCheckArrows(moving, players) {
 }
 
 module.exports = {
-    increment : increment,
-    moveObject : moveObject,
-    distance : distance,
-    moveCheckArrows : moveCheckArrows
+    increment      : increment,
+    moveObject     : moveObject,
+    distance       : distance,
+    moveCheckArrows: moveCheckArrows
 };

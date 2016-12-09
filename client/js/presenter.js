@@ -28,6 +28,8 @@ var Presenter = (function () {
         });
 
         this.socket.on('draw', function (game) {
+            presenter.ctxt.clearRect(0, 0, presenter.canvas.width, presenter.canvas.height);
+
             game.players.forEach(function(player) {
                 // Draw cursors
                 presenter.ctxt.fillText(player.name, player.cursor.x, player.cursor.y);
