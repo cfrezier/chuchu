@@ -1,20 +1,27 @@
-
 var INCREMENT = 5;
+var MAX_WIDTH = 300;
+
+function increment(start, increment) {
+    var result = start + increment;
+    if(result < 0) { result = 0;}
+    if(result > MAX_WIDTH) { result = MAX_WIDTH;}
+    return result;
+}
 
 function moveObject(obj) {
     obj.previous = JSON.parse(JSON.stringify(obj));
     switch (obj.or) {
         case 0:
-            obj.x = obj.x + INCREMENT;
+            obj.x = increment(obj.x, INCREMENT);
             break;
         case 1:
-            obj.y = obj.y + INCREMENT;
+            obj.y = increment(obj.y, INCREMENT);
             break;
         case 2:
-            obj.x = obj.x + INCREMENT;
+            obj.x = increment(obj.x, -INCREMENT);
             break;
         case 3:
-            obj.y = obj.y + INCREMENT;
+            obj.y = increment(obj.y, -INCREMENT);
             break;
         default:
         // don't move
@@ -37,3 +44,10 @@ function moveCheckArrows(moving, players) {
         });
     });
 }
+
+module.exports = {
+    increment : increment,
+    moveObject : moveObject,
+    distance : distance,
+    moveCheckArrows : moveCheckArrows
+};

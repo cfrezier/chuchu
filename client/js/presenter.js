@@ -3,6 +3,8 @@ var Presenter = (function () {
         this.socket = socket;
         this.code = null;
         this.playerContainer = document.querySelector("#playersContainer");
+        this.canvas = document.getElementById("card");
+        this.ctxt = this.canvas.getContext("2d");
     };
 
     Presenter.prototype.execute = function (ctxt) {
@@ -20,6 +22,24 @@ var Presenter = (function () {
             presenter.playerContainer.appendChild(addElementText(data.name));
             ctxt.showPanel("code");
         });
+
+        this.socket.on('start', function (data) {
+            ctxt.showPanel("cardPanel");
+        });
+
+        this.socket.on('draw', function (gam) {
+            var game = JSON.parse(gam);
+
+            // Draw cursors
+            game.players.forEach(function(player) {
+                presenter.ctxt.fillText(player.name, player.cursor.x, player.cursor.y)
+            });
+
+            // Draw goals
+            // Draw Mouses
+            // Draw Cats
+
+        })
     };
 
     Presenter.prototype.start = function () {

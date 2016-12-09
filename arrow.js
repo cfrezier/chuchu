@@ -1,6 +1,10 @@
-function Arrow(x, y, orientation, player) {
-    this.x = x;
-    this.y = y;
-    this.or = orientation;
-    this.player = player;
-}
+module.exports = (function () {
+    function Arrow(x, y, orientation, player) {
+        this.x = x;
+        this.y = y;
+        this.or = orientation;
+        this.player = player;
+    }
+
+    return Arrow;
+})();

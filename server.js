@@ -3,12 +3,12 @@
     var players = [];
 
     require('./array.js');
-    require('./utils.js');
-    require('./game.js');
-    require('./player.js');
-    require('./cat.js');
-    require('./mouse.js');
-    require('./arrow.js');
+    var utils = require('./utils.js');
+    var Game = require('./game.js');
+    var Player = require('./player.js');
+    var Cat = require('./cat.js');
+    var Mouse = require('./mouse.js');
+    var Arrow = require('./arrow.js');
 
     var express = require('express');
     var app = express();
@@ -37,7 +37,7 @@
     io.sockets.on('connection', function (socket) {
         socket.on('iam:presenter', function (data) {
             var game = new Game(socket);
-            games.push(game);
+            games.push(game, games);
 
             game.presenterSocket.emit('display:code', game.code);
             console.log("New Game: Presenter: " + game.code);
@@ -77,9 +77,5 @@
             return game.code === code;
         })[0];
     }
-
-
-
-
 
 })(5000, 30000, 1000, 8000, 7);
