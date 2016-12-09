@@ -37,7 +37,11 @@ var Player = (function () {
                 (function(i, kind) {
                     var div = document.getElementById(kind + i);
                     div.addEventListener('touchstart', function (e) {
-                        this.socket.emit('player:' + kind, { id: player.id, move: i});
+                        player.socket.emit('player:' + kind, { id: player.id, move: i});
+                        e.preventDefault()
+                    }, false);
+                    div.addEventListener('mousedown', function (e) {
+                        player.socket.emit('player:' + kind, { id: player.id, move: i});
                         e.preventDefault()
                     }, false);
                 })(i, kind);
@@ -45,7 +49,11 @@ var Player = (function () {
                 (function(i, kind) {
                     var div = document.getElementById(kind + i);
                     div.addEventListener('touchenter', function (e) {
-                        this.socket.emit('player:' + kind, { id: player.id, move: i});
+                        player.socket.emit('player:' + kind, { id: player.id, move: i});
+                        e.preventDefault()
+                    }, false);
+                    div.addEventListener('mousedown', function (e) {
+                        player.socket.emit('player:' + kind, { id: player.id, move: i});
                         e.preventDefault()
                     }, false);
                 })(i, kind);
@@ -53,7 +61,11 @@ var Player = (function () {
                 (function(i, kind) {
                     var div = document.getElementById(kind + i);
                     div.addEventListener('touchend', function (e) {
-                        this.socket.emit('player:end:' + kind, { id: player.id, orientation: i});
+                        player.socket.emit('player:end:' + kind, { id: player.id, orientation: i});
+                        e.preventDefault()
+                    }, false);
+                    div.addEventListener('mouseup', function (e) {
+                        player.socket.emit('player:end:' + kind, { id: player.id, orientation: i});
                         e.preventDefault()
                     }, false);
                 })(i, kind);
@@ -61,7 +73,11 @@ var Player = (function () {
                 (function(i, kind) {
                     var div = document.getElementById(kind + i);
                     div.addEventListener('touchleave', function (e) {
-                        this.socket.emit('player:end:' + kind, { id: player.id, orientation: i});
+                        player.socket.emit('player:end:' + kind, { id: player.id, orientation: i});
+                        e.preventDefault()
+                    }, false);
+                    div.addEventListener('mouseup', function (e) {
+                        player.socket.emit('player:end:' + kind, { id: player.id, orientation: i});
                         e.preventDefault()
                     }, false);
                 })(i, kind);
