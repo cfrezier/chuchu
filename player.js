@@ -61,15 +61,17 @@ module.exports = (function () {
         var player = this;
 
         cats.forEach(function (cat) {
-            if (utils.distance(cat, player) < 3) {
+            if (utils.distance(cat, player) < 5) {
                 cat.eaten = true;
+                console.log("Chat dans fusée");
                 player.score /= 2;
             }
         });
 
         mouses.forEach(function (mouse) {
-            if (utils.distance(mouse, player) < 3) {
+            if (utils.distance(mouse, player) < 5) {
                 mouse.eaten = true;
+                console.log("Souris dans fusée ");
                 player.score++;
             }
         })

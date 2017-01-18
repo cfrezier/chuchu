@@ -10,7 +10,7 @@ module.exports = (function () {
         this.presenterSocket = socket;
         this.players = [];
         this.mouses = [new Mouse(5, 5, 0), new Mouse(5, 10, 0), new Mouse(5, 15, 0)];
-        this.cats = [new Cat(4, 4, 0)];
+        this.cats = [new Cat(50, 50, 1)];
         this.end = false;
     }
 
@@ -114,7 +114,7 @@ module.exports = (function () {
     };
 
     function filterEaten(obj) {
-        return obj.eaten;
+        return obj.eaten == false;
     }
 
     return Game;
