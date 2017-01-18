@@ -61,14 +61,14 @@ module.exports = (function () {
         var player = this;
 
         cats.forEach(function (cat) {
-            if (utils.distance(cat, player) < 5) {
+            if (utils.distance(cat, player) < 3) {
                 cat.eaten = true;
                 player.score /= 2;
             }
         });
 
         mouses.forEach(function (mouse) {
-            if (utils.distance(mouse, player) < 5) {
+            if (utils.distance(mouse, player) < 3) {
                 mouse.eaten = true;
                 player.score++;
             }
