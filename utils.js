@@ -1,34 +1,39 @@
-var INCREMENT = 5;
-var MAX_WIDTH = 300;
+var MIN = 0, MAX = 292, OFFSET_Y = 8;
+var INCREMENT = 3;
 
-function increment(start, increment) {
+function increment(start, increment, min, max) {
     var result = start + increment;
-    if (result < 0) {
-        result = 0;
+    if (result < min) {
+        result = min;
     }
-    if (result > MAX_WIDTH) {
-        result = MAX_WIDTH;
+    if (result > max) {
+        result = max;
     }
     return result;
 }
 
 function moveObject(obj) {
-    obj.previous = JSON.parse(JSON.stringify(obj));
-    switch (obj.or) {
-        case 0:
-            obj.x = increment(obj.x, INCREMENT);
-            break;
-        case 1:
-            obj.y = increment(obj.y, INCREMENT);
-            break;
-        case 2:
-            obj.x = increment(obj.x, -INCREMENT);
-            break;
-        case 3:
-            obj.y = increment(obj.y, -INCREMENT);
-            break;
-        default:
-        // don't move
+    try {
+        delete obj.previous;
+        obj.previous = JSON.parse(JSON.stringify(obj));
+        switch (obj.or) {
+            case 0:
+                obj.x = increment(obj.x, INCREMENT, MIN, MAX);
+                break;
+            case 1:
+                obj.y = increment(obj.y, INCREMENT, MIN + OFFSET_Y, MAX + OFFSET_Y);
+                break;
+            case 2:
+                obj.x = increment(obj.x, -INCREMENT, MIN, MAX);
+                break;
+            case 3:
+                obj.y = increment(obj.y, -INCREMENT, MIN + OFFSET_Y, MAX + OFFSET_Y);
+                break;
+            default:
+            // don't move
+        }
+    } catch (e) {
+        console.log("ERROR : obj:" + obj);
     }
 }
 
@@ -49,9 +54,17 @@ function moveCheckArrows(moving, players) {
     });
 }
 
+function randomPlace() {
+    return {
+        x: Math.round(Math.random() * 292),
+        y: Math.round(Math.random() * 292) + 8
+    }
+}
+
 module.exports = {
     increment      : increment,
     moveObject     : moveObject,
     distance       : distance,
-    moveCheckArrows: moveCheckArrows
+    moveCheckArrows: moveCheckArrows,
+    randomPlace    : randomPlace
 };

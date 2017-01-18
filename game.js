@@ -9,8 +9,8 @@ module.exports = (function () {
         this.code = this.generateCode(games);
         this.presenterSocket = socket;
         this.players = [];
-        this.mouses = [new Mouse(10, 20, 0), new Mouse(10, 30, 0), new Mouse(10, 40, 0)];
-        this.cats = [new Cat(50, 60, 0)];
+        this.mouses = [new Mouse(1, 2, 0), new Mouse(1, 3, 0), new Mouse(1, 4, 0)];
+        this.cats = [new Cat(4, 4, 0)];
         this.end = false;
     }
 
@@ -84,18 +84,18 @@ module.exports = (function () {
         // Boucle main de calcul du jeu
 
         // Faire bouger les objets
-        this.mouses.forEach(function (mouse) {
+        game.mouses.forEach(function (mouse) {
             mouse.move(game.players);
         });
-        this.cats.forEach(function (cat) {
+        game.cats.forEach(function (cat) {
             cat.move(game.players);
         });
-        this.players.forEach(function (player) {
+        game.players.forEach(function (player) {
             player.move();
         });
 
         // Les chats mangent les souris
-        this.cats.forEach(function (cat) {
+        game.cats.forEach(function (cat) {
             cat.eat(game.mouses);
         });
         game.mouses = game.mouses.filter(filterEaten);
@@ -108,9 +108,9 @@ module.exports = (function () {
         game.cats = game.cats.filter(filterEaten);
 
         // Envoi de la game recalculée pour affichage
-        this.broadcast("draw", this.drawData());
+        game.broadcast("draw", this.drawData());
 
-        this.planNextStep();
+        game.planNextStep();
     };
 
     function filterEaten(obj) {

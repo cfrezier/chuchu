@@ -11,8 +11,9 @@ module.exports = (function () {
 
         this.color = "#FF0000";
         this.score = 0;
-        this.goal = {x: 0, y: 0};
-        this.cursor = {x: 0, y: 0, or: -1};
+        this.goal = utils.randomPlace();
+        this.cursor = utils.randomPlace();
+        this.cursor.or = -1;
         this.arrows = [];
 
         var player = this;
