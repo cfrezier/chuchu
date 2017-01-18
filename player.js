@@ -37,7 +37,7 @@ module.exports = (function () {
             cursor: this.cursor,
             goal: this.goal,
             arrows: this.arrows.map(function(arrow) {
-                arrow.drawData()
+                return arrow.drawData();
             })
         };
     };

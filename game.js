@@ -9,7 +9,7 @@ module.exports = (function () {
         this.code = this.generateCode(games);
         this.presenterSocket = socket;
         this.players = [];
-        this.mouses = [new Mouse(1, 2, 0), new Mouse(1, 3, 0), new Mouse(1, 4, 0)];
+        this.mouses = [new Mouse(5, 5, 0), new Mouse(5, 10, 0), new Mouse(5, 15, 0)];
         this.cats = [new Cat(4, 4, 0)];
         this.end = false;
     }

@@ -9,15 +9,13 @@ var Presenter = (function () {
         this.ctxt = this.canvas.getContext("2d");
     };
 
-    Presenter.prototype.tranformX = function(x) {
+    Presenter.prototype.tranformX = function (x) {
         return this.canvas.width / MAX_X * x;
     };
 
-    Presenter.prototype.tranformY = function(x) {
+    Presenter.prototype.tranformY = function (x) {
         return this.canvas.height / MAX_X * x;
     };
-
-    var i = 50;
 
     Presenter.prototype.execute = function (ctxt) {
         var presenter = this;
@@ -42,32 +40,53 @@ var Presenter = (function () {
         this.socket.on('draw', function (game) {
             presenter.ctxt.clearRect(0, 0, presenter.canvas.width, presenter.canvas.height);
 
-            game.players.forEach(function(player) {
-                presenter.ctxt.strokeStyle = player.color;
-                presenter.ctxt.fillStyle = player.color;
+            game.players.forEach(function (player) {
                 presenter.drawPlayer(player);
                 presenter.drawGoal(player);
-
-                if(i-- < 0) {
-                    console.log(JSON.stringify(player));
-                    i = 50;
-                }
+                player.arrows.forEach(function(arrow) {
+                    presenter.drawArrow(arrow);
+                });
             });
 
-            // Draw Mouses
+            game.mouses.forEach(function (mouse) {
+                presenter.drawMouse(mouse);
+            });
+
             // Draw Cats
         })
     };
 
-    Presenter.prototype.drawPlayer = function(player) {
-        this.ctxt.font="5px Arial";
+    Presenter.prototype.drawPlayer = function (player) {
+        this.ctxt.font = "8px Arial";
+        this.ctxt.fillStyle = player.color;
         this.ctxt.fillText(player.name.substr(0, 1), this.tranformX(player.cursor.x), this.tranformY(player.cursor.y));
     };
 
-    Presenter.prototype.drawGoal = function(player) {
+    Presenter.prototype.drawArrow = function (arrow) {
+        var toArrow = {x: arrow.x, y: arrow.y, or: arrow.or};
+        moveObjectNoCheck(toArrow, 5);
+        var headlen = 3;
+        var angle = Math.atan2(toArrow.y-arrow.y,toArrow.x-arrow.x);
         this.ctxt.beginPath();
-        this.ctxt.arc(this.tranformX(player.goal.x), this.tranformY(player.goal.y), 3, 0, 2*Math.PI);
+        this.ctxt.moveTo(arrow.x, arrow.y);
+        this.ctxt.lineTo(toArrow.x, toArrow.y);
+        this.ctxt.lineTo(toArrow.x-headlen*Math.cos(angle-Math.PI/6),toArrow.y-headlen*Math.sin(angle-Math.PI/6));
+        this.ctxt.moveTo(toArrow.x, toArrow.y);
+        this.ctxt.lineTo(toArrow.x-headlen*Math.cos(angle+Math.PI/6),toArrow.y-headlen*Math.sin(angle+Math.PI/6));
         this.ctxt.stroke();
+    };
+
+    Presenter.prototype.drawGoal = function (player) {
+        this.ctxt.strokeStyle = player.color;
+        drawCircle.call(this, player.goal);
+    };
+
+    Presenter.prototype.drawMouse = function (mouse) {
+        this.ctxt.strokeStyle = "brown";
+        drawCircle.call(this, mouse, 4);
+        var head = {x: mouse.x, y: mouse.y, or: mouse.or};
+        moveObjectNoCheck(head, 3);
+        drawCircle.call(this, head, 2);
     };
 
     Presenter.prototype.start = function () {
@@ -79,6 +98,32 @@ var Presenter = (function () {
         var p = document.createElement("P");
         p.appendChild(text);
         return p;
+    }
+
+    function drawCircle(obj, size) {
+        this.ctxt.beginPath();
+        this.ctxt.arc(this.tranformX(obj.x), this.tranformY(obj.y), size, 0, 2 * Math.PI);
+        this.ctxt.stroke();
+    }
+
+    function moveObjectNoCheck(obj, increment) {
+        switch (obj.or) {
+            case 0:
+                obj.x = obj.x + increment;
+                break;
+            case 1:
+                obj.y = obj.y + increment;
+                break;
+            case 2:
+                obj.x = obj.x - increment;
+                break;
+            case 3:
+                obj.y = obj.y - increment;
+                break;
+            default:
+            // don't move
+        }
+        return obj;
     }
 
     return Presenter;

@@ -1,36 +1,43 @@
 var MIN = 0, MAX = 292, OFFSET_Y = 8;
 var INCREMENT = 3;
 
-function increment(start, increment, min, max) {
+function increment(start, increment, min, max, or) {
     var result = start + increment;
     if (result < min) {
         result = min;
+        or.or = (or.or + 1) %4;
     }
     if (result > max) {
         result = max;
+        or.or = (or.or + 1) %4;
     }
     return result;
 }
 
-function moveObject(obj) {
+function moveObject(obj, doChangeOr) {
     try {
+        var or = {or : obj.or};
+
         delete obj.previous;
         obj.previous = JSON.parse(JSON.stringify(obj));
         switch (obj.or) {
             case 0:
-                obj.x = increment(obj.x, INCREMENT, MIN, MAX);
+                obj.x = increment(obj.x, INCREMENT, MIN, MAX, or);
                 break;
             case 1:
-                obj.y = increment(obj.y, INCREMENT, MIN + OFFSET_Y, MAX + OFFSET_Y);
+                obj.y = increment(obj.y, INCREMENT, MIN + OFFSET_Y, MAX + OFFSET_Y, or);
                 break;
             case 2:
-                obj.x = increment(obj.x, -INCREMENT, MIN, MAX);
+                obj.x = increment(obj.x, -INCREMENT, MIN, MAX, or);
                 break;
             case 3:
-                obj.y = increment(obj.y, -INCREMENT, MIN + OFFSET_Y, MAX + OFFSET_Y);
+                obj.y = increment(obj.y, -INCREMENT, MIN + OFFSET_Y, MAX + OFFSET_Y, or);
                 break;
             default:
             // don't move
+        }
+        if(doChangeOr) {
+            obj.or = or.or;
         }
     } catch (e) {
         console.log("ERROR : obj:" + obj);
@@ -42,7 +49,7 @@ function distance(mouse, cat) {
 }
 
 function moveCheckArrows(moving, players) {
-    moveObject(moving);
+    moveObject(moving, true);
     players.forEach(function (player) {
         player.arrows.forEach(function (arrow) {
             var betweenX = (moving.previous.x >= arrow.x && arrow.x >= moving.x) || (moving.previous.x <= arrow.x && arrow.x <= moving.x);
