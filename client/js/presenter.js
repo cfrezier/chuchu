@@ -83,7 +83,8 @@ var Presenter = (function () {
 
     Presenter.prototype.drawGoal = function (player) {
         this.ctxt.strokeStyle = player.color;
-        drawCircle.call(this, player.goal);
+        drawCircle.call(this, player.goal, 5);
+        this.ctxt.fill();
     };
 
     Presenter.prototype.drawMouse = function (mouse) {
