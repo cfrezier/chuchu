@@ -52,7 +52,9 @@ var Presenter = (function () {
                 presenter.drawMouse(mouse);
             });
 
-            // Draw Cats
+            game.cats.forEach(function (cat) {
+                presenter.drawCat(cat);
+            });
         })
     };
 
@@ -64,8 +66,8 @@ var Presenter = (function () {
 
     Presenter.prototype.drawArrow = function (arrow) {
         var toArrow = {x: arrow.x, y: arrow.y, or: arrow.or};
-        moveObjectNoCheck(toArrow, 5);
-        var headlen = 3;
+        moveObjectNoCheck(toArrow, 6);
+        var headlen = 4;
         var angle = Math.atan2(toArrow.y-arrow.y,toArrow.x-arrow.x);
         this.ctxt.beginPath();
         this.ctxt.moveTo(arrow.x, arrow.y);
@@ -87,6 +89,14 @@ var Presenter = (function () {
         var head = {x: mouse.x, y: mouse.y, or: mouse.or};
         moveObjectNoCheck(head, 3);
         drawCircle.call(this, head, 2);
+    };
+
+    Presenter.prototype.drawCat = function (mouse) {
+        this.ctxt.strokeStyle = "black";
+        drawCircle.call(this, mouse, 5);
+        var head = {x: mouse.x, y: mouse.y, or: mouse.or};
+        moveObjectNoCheck(head, 4);
+        drawCircle.call(this, head, 3);
     };
 
     Presenter.prototype.start = function () {
