@@ -3,16 +3,23 @@
 <head>
     <meta charset='utf-8'>
     <title>Liars !</title>
-    <style type="text/css">
-
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <style >
+        .up-top {
+            padding-left: 15px;
+            margin: 5px;
+        }
+        .left-right {
+            display:inline-block;
+            margin: 5px;
+        }
     </style>
 </head>
 
 <body onload="load()">
 
 <div id="startPanel">
-    <label for="name">Nom:</label><input id="name" value="">
-    <label for="code">Code d'accès:</label><input id="code" value="">
+    <label for="name">Nom:</label><input id="name" value=""> <label for="code">Code d'accès:</label><input id="code" value="">
     <button onclick="iAm('player')">Jouer !</button>
     <button onclick="iAm('presenter')">Device de présentation</button>
 </div>
@@ -30,16 +37,20 @@
 
 <div id="controllerPanel">
     <div id="move" style="display:inline-block;width: 48%">
-        <div id="move0">Right</div>
-        <div id="move1">Down</div>
-        <div id="move2">Left</div>
-        <div id="move3">Top</div>
+        <div id="move3" class="up-top"><i class="fa fa-arrow-up" aria-hidden="true"></i></div>
+        <div>
+            <div id="move2" class="left-right"><i class="fa fa-arrow-left" aria-hidden="true"></i></div>
+            <div id="move0" class="left-right"><i class="fa fa-arrow-right" aria-hidden="true"></i></div>
+        </div>
+        <div id="move1" class="up-top"><i class="fa fa-arrow-down" aria-hidden="true"></i></div>
     </div>
     <div id="place" style="display:inline-block;width: 48%">
-        <div id="place0">Right</div>
-        <div id="place1">Down</div>
-        <div id="place2">Left</div>
-        <div id="place3">Top</div>
+        <div id="place3" class="up-top"><i class="fa fa-arrow-circle-o-up" aria-hidden="true"></i></div>
+        <div>
+            <div id="place2" class="left-right"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i></div>
+            <div id="place0" class="left-right"><i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i></div>
+        </div>
+        <div id="place1" class="up-top"><i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i></div>
     </div>
 </div>
 
