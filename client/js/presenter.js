@@ -43,7 +43,7 @@ var Presenter = (function () {
             game.players.forEach(function (player) {
                 presenter.drawPlayer(player);
                 presenter.drawGoal(player);
-                player.arrows.forEach(function(arrow) {
+                player.arrows.forEach(function (arrow) {
                     presenter.drawArrow(arrow);
                 });
             });
@@ -65,16 +65,19 @@ var Presenter = (function () {
     };
 
     Presenter.prototype.drawArrow = function (arrow) {
+        var fromArrow = {x: arrow.x, y: arrow.y, or: arrow.or};
         var toArrow = {x: arrow.x, y: arrow.y, or: arrow.or};
-        moveObjectNoCheck(toArrow, 6);
-        var headlen = 4;
-        var angle = Math.atan2(toArrow.y-arrow.y,toArrow.x-arrow.x);
+        moveObjectNoCheck(fromArrow, -4);
+        moveObjectNoCheck(toArrow, 4);
+
+        var headlen = 5;
+        var angle = Math.atan2(toArrow.y - fromArrow.y, toArrow.x - fromArrow.x);
         this.ctxt.beginPath();
-        this.ctxt.moveTo(arrow.x, arrow.y);
-        this.ctxt.lineTo(toArrow.x, toArrow.y);
-        this.ctxt.lineTo(toArrow.x-headlen*Math.cos(angle-Math.PI/6),toArrow.y-headlen*Math.sin(angle-Math.PI/6));
-        this.ctxt.moveTo(toArrow.x, toArrow.y);
-        this.ctxt.lineTo(toArrow.x-headlen*Math.cos(angle+Math.PI/6),toArrow.y-headlen*Math.sin(angle+Math.PI/6));
+        this.ctxt.moveTo(this.tranformX(fromArrow.x), this.tranformY(fromArrow.y));
+        this.ctxt.lineTo(this.tranformX(toArrow.x), this.tranformY(toArrow.y));
+        this.ctxt.lineTo(this.tranformX(toArrow.x - headlen * Math.cos(angle - Math.PI / 6)), this.tranformY(toArrow.y - headlen * Math.sin(angle - Math.PI / 6)));
+        this.ctxt.moveTo(this.tranformX(toArrow.x), this.tranformY(toArrow.y));
+        this.ctxt.lineTo(this.tranformX(toArrow.x - headlen * Math.cos(angle + Math.PI / 6)), this.tranformY(toArrow.y - headlen * Math.sin(angle + Math.PI / 6)));
         this.ctxt.stroke();
     };
 
