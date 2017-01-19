@@ -55,6 +55,8 @@ var Presenter = (function () {
             game.cats.forEach(function (cat) {
                 presenter.drawCat(cat);
             });
+
+            document.getElementById("type").innerHTML = game.type;
         })
     };
 

@@ -63,7 +63,6 @@ module.exports = (function () {
         cats.forEach(function (cat) {
             if (utils.distance(cat, player.goal) < 10) {
                 cat.eaten = true;
-                console.log("Chat dans fusée");
                 player.score /= 2;
             }
         });
@@ -71,7 +70,6 @@ module.exports = (function () {
         mouses.forEach(function (mouse) {
             if (utils.distance(mouse, player.goal) < 10) {
                 mouse.eaten = true;
-                console.log("Souris dans fusée ");
                 player.score++;
             }
         })

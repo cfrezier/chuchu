@@ -16,6 +16,8 @@ module.exports = (function () {
             timeout: 50
         };
         this.type = "Regular";
+        this.timeout = 2000;
+        this.nextGenerators = [CatMania, MouseMania];
     }
 
     Generator.prototype.getMouses = function() {
@@ -34,9 +36,18 @@ module.exports = (function () {
         return this.cats.list = cats;
     };
 
+    Generator.prototype.nextGenerator = function() {
+        var next = Math.round(Math.random() * 500) % this.nextGenerators.length;
+        return new this.nextGenerators[next]();
+    };
+
     Generator.prototype.generate = function() {
         this.generateObj(this.mouses, Mouse);
         this.generateObj(this.cats, Cat);
+        if(this.timeout-- < 0) {
+            return this.nextGenerator();
+        }
+        return undefined;
     };
 
     Generator.prototype.generateObj = function(obj, Type) {
@@ -60,8 +71,11 @@ module.exports = (function () {
     function CatMania() {
         this.type = "CatMania";
         this.mouses.timeout = -1;
+        this.mouses.idx = -1;
         this.cats.timeout = 10;
         this.cats.idx = 10;
+        this.nextGenerators = [Generator];
+        this.timeout = 500;
     }
 
     MouseMania.prototype = new Generator();
@@ -69,6 +83,9 @@ module.exports = (function () {
         this.type = "MouseMania";
         this.mouses.timeout = 2;
         this.cats.timeout = -1;
+        this.cats.idx = -1;
+        this.nextGenerators = [Generator];
+        this.timeout = 500;
     }
 
     return {

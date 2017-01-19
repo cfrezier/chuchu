@@ -24,7 +24,8 @@ module.exports = (function () {
         return {
             players : this.players.map(function(player) { return player.drawData()}),
             mouses: this.mouses(),
-            cats: this.cats()
+            cats: this.cats(),
+            type: this.generator.type + "(" + this.generator.timeout + ")"
         }
     };
 
@@ -116,7 +117,11 @@ module.exports = (function () {
         game.generator.setCats(game.cats().filter(filterEaten));
 
         // Génération
-        game.generator.generate();
+        var nextGenerator = game.generator.generate();
+        if(nextGenerator !== undefined) {
+           // Changement de générateur
+            game.generator = nextGenerator.init(game.players.length);
+        }
 
         // Envoi de la game recalculée pour affichage
         game.broadcast("draw", this.drawData());

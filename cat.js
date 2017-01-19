@@ -17,7 +17,6 @@ module.exports = (function () {
         mouses.forEach(function (mouse) {
             if (utils.distance(mouse, cat) < 5) {
                 mouse.eaten = true;
-                console.log("Souris mangée");
             }
         })
     };
