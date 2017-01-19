@@ -25,7 +25,8 @@ module.exports = (function () {
             players : this.players.map(function(player) { return player.drawData()}),
             mouses: this.mouses(),
             cats: this.cats(),
-            type: this.generator.type + "(" + this.generator.timeout + ")"
+            type: this.generator.type + "(" + this.generator.timeout + ")",
+            places: this.generator.places
         }
     };
 

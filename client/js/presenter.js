@@ -56,8 +56,12 @@ var Presenter = (function () {
                 presenter.drawCat(cat);
             });
 
+            game.places.forEach(function (place) {
+                presenter.drawPlace(place);
+            });
+
             document.getElementById("type").innerHTML = game.type;
-            game.player.sort(function (pl1, pl2) {
+            /* game.player.sort(function (pl1, pl2) {
                 return pl2.score - pl1.score;
             });
             document.getElementById("score").innerHTML = game.players
@@ -65,6 +69,7 @@ var Presenter = (function () {
                     return '<div>' + player.name + " : " + player.score + '</div>';
                 })
                 .join();
+                */
         })
     };
 
@@ -93,24 +98,38 @@ var Presenter = (function () {
 
     Presenter.prototype.drawGoal = function (player) {
         this.ctxt.strokeStyle = player.color;
+        this.ctxt.fillStyle = player.color;
         drawCircle.call(this, player.goal, 5);
+        this.ctxt.fill();
+    };
+
+    Presenter.prototype.drawPlace = function (place) {
+        this.ctxt.strokeStyle = "green";
+        this.ctxt.fillStyle = "green";
+        drawCircle.call(this, place.goal, 8);
         this.ctxt.fill();
     };
 
     Presenter.prototype.drawMouse = function (mouse) {
         this.ctxt.strokeStyle = "brown";
+        this.ctxt.fillStyle = "brown";
         drawCircle.call(this, mouse, 4);
+        this.ctxt.fill();
         var head = {x: mouse.x, y: mouse.y, or: mouse.or};
         moveObjectNoCheck(head, 3);
         drawCircle.call(this, head, 2);
+        this.ctxt.fill();
     };
 
     Presenter.prototype.drawCat = function (mouse) {
         this.ctxt.strokeStyle = "black";
+        this.ctxt.fillStyle = "black";
         drawCircle.call(this, mouse, 5);
+        this.ctxt.fill();
         var head = {x: mouse.x, y: mouse.y, or: mouse.or};
         moveObjectNoCheck(head, 4);
         drawCircle.call(this, head, 3);
+        this.ctxt.fill();
     };
 
     Presenter.prototype.start = function () {
