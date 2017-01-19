@@ -68,7 +68,7 @@ module.exports = (function () {
 
     Game.prototype.start = function () {
         this.state = "playing";
-        this.generator.init(this.players.length);
+        this.generator.init();
         this.broadcast("start");
 
         this.planNextStep();
@@ -121,7 +121,7 @@ module.exports = (function () {
         var nextGenerator = game.generator.generate();
         if(nextGenerator !== undefined) {
            // Changement de générateur
-            game.generator = nextGenerator.init(game.players.length);
+            game.generator = nextGenerator.init();
         }
 
         // Envoi de la game recalculée pour affichage
