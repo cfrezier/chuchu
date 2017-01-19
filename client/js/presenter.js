@@ -66,9 +66,9 @@ var Presenter = (function () {
             });
             document.getElementById("score").innerHTML = game.players
                 .map(function (player) {
-                    return player.name + " : " + player.score;
+                    return '<div>' + player.name + " : " + player.score + '</div>';
                 })
-                .join();
+                .join('');
         })
     };
 

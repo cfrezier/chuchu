@@ -1,5 +1,6 @@
 var utils = require('./utils.js');
 var Arrow = require('./arrow.js');
+var colors = ['darkcyan', 'red', 'blue', 'yellow', 'violet', 'pink'];
 
 module.exports = (function () {
     var playerIdGenerator = 0;
@@ -9,7 +10,7 @@ module.exports = (function () {
         this.socket = socket;
         this.id = playerIdGenerator++;
 
-        this.color = "#FF0000";
+        this.color = colors[playerIdGenerator];
         this.score = 0;
         this.goal = utils.randomPlace();
         this.cursor = utils.randomPlace();
