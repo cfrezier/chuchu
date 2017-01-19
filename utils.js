@@ -52,7 +52,7 @@ function moveCheckArrows(moving, players) {
     moveObject(moving, true);
     players.forEach(function (player) {
         player.arrows.forEach(function (arrow) {
-            if (distance(arrow, moving) < 5) {
+            if (distance(arrow, moving) < 10) {
                 moving.or = arrow.or;
             }
         });
