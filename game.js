@@ -1,6 +1,5 @@
 var utils = require('./utils.js');
-var Mouse = require('./mouse.js');
-var Cat = require('./cat.js');
+var Generator = require('./generator.js');
 var Player = require('./player.js');
 
 module.exports = (function () {
@@ -9,16 +8,23 @@ module.exports = (function () {
         this.code = this.generateCode(games);
         this.presenterSocket = socket;
         this.players = [];
-        this.mouses = [new Mouse(5, 5, 0), new Mouse(5, 10, 0), new Mouse(5, 15, 0)];
-        this.cats = [new Cat(50, 50, 1)];
         this.end = false;
+        this.generator = new Generator.Regular();
     }
+
+    Game.prototype.mouses = function() {
+        return this.generator.getMouses();
+    };
+
+    Game.prototype.cats = function() {
+        return this.generator.getCats();
+    };
 
     Game.prototype.drawData = function() {
         return {
             players : this.players.map(function(player) { return player.drawData()}),
-            mouses: this.mouses,
-            cats: this.cats
+            mouses: this.mouses(),
+            cats: this.cats()
         }
     };
 
@@ -60,11 +66,13 @@ module.exports = (function () {
 
     Game.prototype.start = function () {
         this.state = "playing";
+        this.generator.init(this.players.length);
         this.broadcast("start");
 
         this.planNextStep();
         return this;
     };
+
     Game.prototype.planNextStep = function() {
         var game = this;
         setTimeout(function () {
@@ -84,10 +92,10 @@ module.exports = (function () {
         // Boucle main de calcul du jeu
 
         // Faire bouger les objets
-        game.mouses.forEach(function (mouse) {
+        game.mouses().forEach(function (mouse) {
             mouse.move(game.players);
         });
-        game.cats.forEach(function (cat) {
+        game.cats().forEach(function (cat) {
             cat.move(game.players);
         });
         game.players.forEach(function (player) {
@@ -95,17 +103,20 @@ module.exports = (function () {
         });
 
         // Les chats mangent les souris
-        game.cats.forEach(function (cat) {
-            cat.eat(game.mouses);
+        game.cats().forEach(function (cat) {
+            cat.eat(game.mouses());
         });
-        game.mouses = game.mouses.filter(filterEaten);
+        game.generator.setMouses(game.mouses().filter(filterEaten));
 
         // Les souris et les chats montent dans les goals
         game.players.forEach(function (player) {
-            player.scorePoints(game.mouses, game.cats);
+            player.scorePoints(game.mouses(), game.cats());
         });
-        game.mouses = game.mouses.filter(filterEaten);
-        game.cats = game.cats.filter(filterEaten);
+        game.generator.setMouses(game.mouses().filter(filterEaten));
+        game.generator.setCats(game.cats().filter(filterEaten));
+
+        // Génération
+        game.generator.generate();
 
         // Envoi de la game recalculée pour affichage
         game.broadcast("draw", this.drawData());

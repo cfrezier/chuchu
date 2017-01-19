@@ -66,10 +66,17 @@ function randomPlace() {
     }
 }
 
+function randomArrow() {
+    var arrow = randomPlace();
+    arrow.or = Math.round(Math.random()*400) % 4;
+    return arrow;
+}
+
 module.exports = {
     increment      : increment,
     moveObject     : moveObject,
     distance       : distance,
     moveCheckArrows: moveCheckArrows,
-    randomPlace    : randomPlace
+    randomPlace    : randomPlace,
+    randomArrow    : randomArrow
 };
