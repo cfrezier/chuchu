@@ -6,13 +6,13 @@ module.exports = (function () {
     function Generator() {
         this.places = [];
         this.mouses = {
-            list : [],
-            idx: 0,
+            list   : [],
+            idx    : 0,
             timeout: 5
         };
         this.cats = {
-            list : [],
-            idx: 75,
+            list   : [],
+            idx    : 75,
             timeout: 75
         };
         this.type = "Regular";
@@ -22,44 +22,49 @@ module.exports = (function () {
         this.nbPlaces = 1;
     }
 
-    Generator.prototype.getMouses = function() {
+    Generator.prototype.getMouses = function () {
         return this.mouses.list;
     };
 
-    Generator.prototype.getCats = function() {
+    Generator.prototype.getCats = function () {
         return this.cats.list;
     };
 
-    Generator.prototype.setMouses = function(mouses) {
+    Generator.prototype.setMouses = function (mouses) {
         return this.mouses.list = mouses;
     };
 
-    Generator.prototype.setCats = function(cats) {
+    Generator.prototype.setCats = function (cats) {
         return this.cats.list = cats;
     };
 
-    Generator.prototype.nextGenerator = function() {
+    Generator.prototype.nextGenerator = function () {
         var next = Math.round(Math.random() * 500) % this.nextGenerators.length;
         var nextGen = new this.nextGenerators[next]();
-        if(nextGen.preserve) {
+        if (nextGen.preserve) {
             nextGen.mouses.list = this.mouses.list;
+            this.mouses.list = [];
             nextGen.cats.list = this.cats.list;
+            this.cats.list = [];
+            this.finished = true;
         }
         return nextGen;
     };
 
-    Generator.prototype.generate = function() {
-        this.generateObj(this.mouses, Mouse);
-        this.generateObj(this.cats, Cat);
-        if(this.timeout-- < 0) {
-            return this.nextGenerator();
+    Generator.prototype.generate = function () {
+        if (!this.finished) {
+            this.generateObj(this.mouses, Mouse);
+            this.generateObj(this.cats, Cat);
+            if (this.timeout-- < 0) {
+                return this.nextGenerator();
+            }
+            return undefined;
         }
-        return undefined;
     };
 
-    Generator.prototype.generateObj = function(obj, Type) {
-        if(obj.idx-- === 0) {
-            for(var i = 0; i < this.places.length; i++) {
+    Generator.prototype.generateObj = function (obj, Type) {
+        if (obj.idx-- === 0) {
+            for (var i = 0; i < this.places.length; i++) {
                 var place = this.places[i];
                 obj.list = obj.list.concat(new Type(place.x, place.y, place.or));
             }
@@ -69,7 +74,7 @@ module.exports = (function () {
 
     Generator.prototype.init = function () {
         this.places = [];
-        for(var i = 0; i < this.nbPlaces; i++) {
+        for (var i = 0; i < this.nbPlaces; i++) {
             this.places.push(utils.randomArrow());
         }
         return this;
@@ -101,8 +106,8 @@ module.exports = (function () {
     }
 
     return {
-        Regular : Generator,
-        CatMania: CatMania,
+        Regular   : Generator,
+        CatMania  : CatMania,
         MouseMania: MouseMania
     };
 })();
