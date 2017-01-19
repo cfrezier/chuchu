@@ -61,15 +61,14 @@ var Presenter = (function () {
             });
 
             document.getElementById("type").innerHTML = game.type;
-            /* game.player.sort(function (pl1, pl2) {
+            game.players.sort(function (pl1, pl2) {
                 return pl2.score - pl1.score;
             });
             document.getElementById("score").innerHTML = game.players
                 .map(function (player) {
-                    return '<div>' + player.name + " : " + player.score + '</div>';
+                    return player.name + " : " + player.score;
                 })
                 .join();
-                */
         })
     };
 
@@ -106,7 +105,7 @@ var Presenter = (function () {
     Presenter.prototype.drawPlace = function (place) {
         this.ctxt.strokeStyle = "green";
         this.ctxt.fillStyle = "green";
-        drawCircle.call(this, place.goal, 8);
+        drawCircle.call(this, place, 8);
         this.ctxt.fill();
     };
 
@@ -116,7 +115,7 @@ var Presenter = (function () {
         drawCircle.call(this, mouse, 4);
         this.ctxt.fill();
         var head = {x: mouse.x, y: mouse.y, or: mouse.or};
-        moveObjectNoCheck(head, 3);
+        moveObjectNoCheck(head, 4);
         drawCircle.call(this, head, 2);
         this.ctxt.fill();
     };
@@ -127,7 +126,7 @@ var Presenter = (function () {
         drawCircle.call(this, mouse, 5);
         this.ctxt.fill();
         var head = {x: mouse.x, y: mouse.y, or: mouse.or};
-        moveObjectNoCheck(head, 4);
+        moveObjectNoCheck(head, 5);
         drawCircle.call(this, head, 3);
         this.ctxt.fill();
     };

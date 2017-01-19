@@ -63,7 +63,7 @@ module.exports = (function () {
         cats.forEach(function (cat) {
             if (utils.distance(cat, player.goal) < 10) {
                 cat.eaten = true;
-                player.score /= 2;
+                player.score = Math.round(player.score / 2);
             }
         });
 
