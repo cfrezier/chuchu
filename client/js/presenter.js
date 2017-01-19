@@ -57,6 +57,14 @@ var Presenter = (function () {
             });
 
             document.getElementById("type").innerHTML = game.type;
+            game.player.sort(function (pl1, pl2) {
+                return pl2.score - pl1.score;
+            });
+            document.getElementById("score").innerHTML = game.players
+                .map(function (player) {
+                    return '<div>' + player.name + " : " + player.score + '</div>';
+                })
+                .join();
         })
     };
 
