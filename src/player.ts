@@ -32,7 +32,7 @@ export class Player {
     this.ws = ws;
   }
 
-  init(idx: number, arr: Player[]) {
+  init(idx: number) {
     this.points = 0;
     this.color = colors[idx];
     this.updateRatio();

@@ -4,11 +4,11 @@ import {DataMsg} from "./data.message";
 import {WebSocket} from "ws";
 import * as fs from "fs";
 import {CONFIG} from "../browser/common/config";
+import {StartingGenerator} from "./generators/starting-generator";
 
 export class Queue {
   players = [] as Player[];
-  nextGame?: Game;
-  currentGame?: Game;
+  currentGame: Game;
   servers: (WebSocket | undefined)[] = [];
   path: string;
 
@@ -21,6 +21,7 @@ export class Queue {
         this.players = JSON.parse(data).map((playerObj: Player) => Player.from(playerObj));
       }
     });
+    this.currentGame = new Game(this);
   }
 
   processMsg(payload: DataMsg, ws?: WebSocket) {
@@ -50,36 +51,26 @@ export class Queue {
         this.sendHighScoreToServer();
         break;
       case 'queue':
-        if (!this.nextGame) {
-          console.log(`Creating next game`);
-          this.nextGame = new Game(this);
-        }
+
         const player = this.players.find((player) => payload.key === player.key);
         const playerInCurrentGame = this.currentGame?.players.find((player) => payload.key === player.key);
-        const playerInCurrentQueue = this.nextGame?.players.find((player) => payload.key === player.key);
 
-        if (!playerInCurrentGame && !playerInCurrentQueue && !!player) {
-          if (this.currentGame && this.currentGame.started) {
-            console.log(`Player ${player.name} queuing for next game`);
-            this.nextGame.apply(player);
-            this.sendQueueUpdate();
-          } else {
-            console.log(`Player ${player.name} queuing for game about to be launched`);
-            if (!!this.currentGame) {
-              this.currentGame!.apply(player);
-            } else {
-              this.nextGame!.apply(player);
-            }
-            this.sendQueueUpdate();
-          }
-        }
-        if (!!player && playerInCurrentQueue) {
-          //already in queue
-          player.queued();
+        if (!playerInCurrentGame && !!player) {
+          console.log(`Adding Player ${player.name}`);
+          this.currentGame.apply(player);
+          this.sendQueueUpdate();
         }
         if (!!player && playerInCurrentGame) {
+          //already in game
           player.queued();
           player.stopWait();
+        }
+        break;
+      case 'quit':
+        const playerQuitting = this.players.find((player) => payload.key === player.key);
+        if (playerQuitting) {
+          this.currentGame!.unapply(playerQuitting);
+          console.log(`Player ${playerQuitting?.name} quitting`);
         }
         break;
       case 'input':
@@ -103,26 +94,21 @@ export class Queue {
     }
   }
 
-  initGame() {
-    this.currentGame = this.nextGame!;
-    this.nextGame = undefined;
-  }
-
   executeGame() {
+    this.currentGame!.started = this.currentGame.players.length >= 1;
     this.currentGame!.execute(() => {
       this.sendCurrentScoreToServer();
-      this.sendHighScoreToServer();
-    });
-    this.sendGameToServer();
-    if (!this.currentGame!.finished) {
-      setTimeout(() => this.executeGame(), CONFIG.GAME_LOOP_MS);
-    } else {
-      console.log("Game finished.");
-      this.currentGame = undefined;
       this.sendHighScoreToServer();
       this.sendGameToServer();
       this.sendQueueUpdate();
       this.asyncSave();
+    });
+    this.sendGameToServer();
+    if (this.currentGame!.started) {
+      setTimeout(() => this.executeGame(), CONFIG.GAME_LOOP_MS);
+    } else {
+      this.currentGame.clear();
+      this.sendGameToServer();
     }
   }
 
@@ -139,7 +125,7 @@ export class Queue {
   public sendQueueUpdate() {
     const state = JSON.stringify({
       type: 'queue-state',
-      state: {...this.nextGame?.state(), startDate: this.currentGame?.state().startDate}
+      state: {...this.currentGame?.state()}
     });
     this.servers.forEach((ws) => ws?.send(state));
   }
@@ -183,12 +169,5 @@ export class Queue {
 
   doneWaiting() {
     this.players.forEach(pl => pl.stopWait());
-  }
-
-  clear() {
-    this.players.forEach(player => player.canQueue());
-    this.nextGame!.players = [];
-    this.sendQueueUpdate();
-    console.log('Queue cleared');
   }
 }

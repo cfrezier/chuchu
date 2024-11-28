@@ -7,9 +7,7 @@ import {StartingGenerator} from "./generators/starting-generator";
 
 export class Game {
   players: Player[] = [];
-  startDate?: number;
   queue: Queue;
-  finished = false;
   started: boolean = false;
   ready = false;
   currentGenerator: GameGenerator;
@@ -22,45 +20,31 @@ export class Game {
 
   apply(player: Player) {
     if (!this.players.filter(player => player.connected).find(playerInGame => playerInGame.key === player.key)) {
-      if (this.players.length < CONFIG.MAX_PLAYERS) {
-        this.players.push(player);
-        this.players.forEach((player, idx, arr) => player.init(idx, arr));
-        player.queued();
-        this.checkForStartedBelow1Min();
-      }
-      if (this.players.length > (CONFIG.MIN_PLAYERS - 1) && !this.startDate) {
-        console.log(`Starting in ${CONFIG.QUEUE_TIME}s`);
-        player.queued();
-        this.startDate = new Date().getTime() + 1000 * CONFIG.QUEUE_TIME;
-        setTimeout(() => this.start(), 1000 * CONFIG.QUEUE_TIME);
-        this.queue.initGame();
+      this.players.push(player);
+      player.init(this.players.length - 1);
+      player.queued();
+      console.log(this.players.map(pl => pl.state()));
+      if (this.players.length >= 1) {
+        console.log('starting game execution...')
+        this.queue.doneWaiting();
+        this.queue.executeGame();
+        this.queue.sendQueueUpdate();
       }
       this.queue.sendGameToServer();
     }
   }
 
-  start(retry = 0) {
-    this.clearCheckTimer();
-    this.ready = true;
-    if (this.players.length >= CONFIG.MIN_PLAYERS) {
-      this.started = true;
-      this.queue.doneWaiting();
-      this.queue.executeGame();
-      this.startDate = new Date().getTime();
-      this.queue.sendQueueUpdate();
-    } else {
-      console.log(`Not enough players... retry in ${CONFIG.RETRY_TIME}s`);
-      this.startDate = new Date().getTime() + 1000 * CONFIG.QUEUE_TIME;
-      this.queue.sendQueueUpdate();
-      if (retry > 3) {
-        console.log(`Clearing queue.`);
-        this.queue.clear();
-      } else {
-        setTimeout(() => {
-          console.log(`Retrying...`);
-          this.start(retry + 1);
-        }, CONFIG.RETRY_TIME * 1000);
+  unapply(player: Player) {
+    if (this.players.find(playerInGame => playerInGame.key === player.key)) {
+      this.players = this.players.filter(playerInGame => playerInGame.key !== player.key);
+      this.currentGenerator.unapply(player);
+      player.canQueue();
+      if (this.players.length === 0) {
+        this.started = false;
+        console.log('Game stopped');
       }
+      this.queue.sendGameToServer();
+      this.queue.sendQueueUpdate();
     }
   }
 
@@ -68,39 +52,16 @@ export class Game {
     return {
       players: this.players.map(player => player.state()).sort((p1, p2) => p1.points - p2.points),
       generator: this.currentGenerator.state(),
-      startDate: this.startDate,
       width: CONFIG.GLOBAL_WIDTH,
       height: CONFIG.GLOBAL_HEIGHT,
-      finished: this.finished,
       started: this.started,
       ready: this.ready,
     }
   }
 
-  reward() {
-    const elapsed = Math.round(new Date().getTime() - (this.startDate ?? 0)) / 1000;
-    console.log('elapsed', elapsed);
-    this.players.forEach((player) => player.reward(elapsed));
-  }
-
-  checkTimer?: any;
-
-  private checkForStartedBelow1Min() {
-    this.clearCheckTimer();
-    console.log('...setting check timer');
-    this.checkTimer = setTimeout(() => {
-      this.queue.clear();
-    }, 60000);
-  }
-
-  clearCheckTimer() {
-    if (this.checkTimer) {
-      clearTimeout(this.checkTimer);
-      console.log('...clearing check timer');
-    }
-  }
-
   execute(changeScoreListener: () => void) {
+    let sendUpdate = false;
+
     this.currentGenerator.mouses.forEach(mouse => mouse.move(this.currentGenerator.walls, this.players.map(player => player.arrows), this.currentGenerator.mouseSpeed));
     this.currentGenerator.cats.forEach(cat => cat.move(this.currentGenerator.walls, this.players.map(player => player.arrows), this.currentGenerator.catSpeed));
     this.currentGenerator.goals.map(goal => {
@@ -108,7 +69,7 @@ export class Game {
       if (absorbed && absorbed.length > 0) {
         absorbed.forEach(absorbedObject => goal.player.absorb(absorbedObject));
         this.currentGenerator.remove(absorbed);
-        changeScoreListener();
+        sendUpdate = true;
       }
     });
 
@@ -136,15 +97,16 @@ export class Game {
       this.currentGenerator = GeneratorFactory.next(this.currentGenerator, this.players);
       this.players.forEach(player => player.arrows = []);
       this.phases++;
+      this.currentGenerator.reward(this.players);
+      sendUpdate = true;
     }
 
-    if (this.phases > CONFIG.MAX_PHASES) {
-      this.finished = true;
-      this.reward();
+    if (sendUpdate) {
+      changeScoreListener();
     }
+  }
 
-    if (this.finished) {
-      this.players.forEach(player => player.canQueue());
-    }
+  clear() {
+    this.currentGenerator = new StartingGenerator();
   }
 }

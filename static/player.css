@@ -109,15 +109,29 @@ body {
     }
 }
 
-.trackpad {
-    border: 2px solid white;
-    border-radius: 2px;
-    width: 300px;
-    height: 300px;
-}
-
 .middle-arrows {
     display: flex;
     flex-direction: row;
     gap: 30px;
+}
+
+.pad {
+    display: flex;
+    flex-direction: row;
+
+    .trackpad {
+        border: 2px solid white;
+        border-radius: 2px;
+        width: 300px;
+        height: 300px;
+    }
+
+    .buttons {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+    }
 }

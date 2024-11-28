@@ -24,6 +24,7 @@ export abstract class GameGenerator {
   mouseStartingDirections: Direction[];
   catStartingPoints: [number, number][];
   catStartingDirections: Direction[];
+  startDate: number;
 
   abstract _step(index: number): void;
 
@@ -41,6 +42,7 @@ export abstract class GameGenerator {
     this.mouseStartingDirections = this.mouseStartingPoints.map(() => Geometry.randomDirection());
     this.catStartingPoints = new Array(Math.round((Math.random() * 1000 % 2) + 1)).fill(1).map(() => Geometry.randomCell());
     this.catStartingDirections = this.catStartingPoints.map(() => Geometry.randomDirection());
+    this.startDate = Date.now();
   }
 
   step(): void {
@@ -77,5 +79,16 @@ export abstract class GameGenerator {
     this.catStartingPoints.forEach((point, idx) => {
       this.cats.push(new Cat([point[0] / CONFIG.COLUMNS * CONFIG.GLOBAL_WIDTH, point[1] / CONFIG.ROWS * CONFIG.GLOBAL_HEIGHT], this.catStartingDirections[idx]));
     });
+  }
+
+  reward(players: Player[]) {
+    const elapsed = Math.round(new Date().getTime() - (this.startDate ?? 0)) / 1000;
+    console.log('elapsed', elapsed);
+    players.forEach((player) => player.reward(elapsed));
+  }
+
+  unapply(player: Player) {
+    this.goals = this.goals.filter(goal => goal.player.key !== player.key);
+    this.reward([player]);
   }
 }

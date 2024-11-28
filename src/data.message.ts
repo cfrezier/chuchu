@@ -6,6 +6,9 @@ export type DataMsg = {
   type: 'queue',
   key: string
 } | {
+  type: 'quit',
+  key: string
+} | {
   type: 'server'
 } | {
   type: 'input',

@@ -6,6 +6,7 @@ export class InputComponent {
   down: HTMLButtonElement | undefined;
   left: HTMLButtonElement | undefined;
   right: HTMLButtonElement | undefined;
+  quit: HTMLButtonElement | undefined;
 
   init(ws: WebSocket, key: string, activity: () => void) {
     this.panel = document.getElementById('panel-input') as HTMLDivElement;
@@ -16,6 +17,8 @@ export class InputComponent {
     this.down = document.getElementById('arrow-down') as HTMLButtonElement;
     this.left = document.getElementById('arrow-left') as HTMLButtonElement;
     this.right = document.getElementById('arrow-right') as HTMLButtonElement;
+
+    this.quit = document.getElementById('quit') as HTMLButtonElement;
 
     if (this.trackpad && this.label && this.panel) {
       this.hide();
@@ -58,6 +61,10 @@ export class InputComponent {
       }, false);
       this.right.addEventListener("click", () => {
         ws.send(JSON.stringify({type: 'arrow', direction: 'right', key}));
+        activity();
+      }, false);
+      this.quit.addEventListener("click", () => {
+        ws.send(JSON.stringify({type: 'quit', key}));
         activity();
       }, false);
     } else {
