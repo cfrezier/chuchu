@@ -11,7 +11,6 @@ export class ManyWallsGenerator extends GameGenerator {
     this.catSpeed = 5;
     this.mouseSpeed = 5;
     this.walls.push(...WallsFactory.create(),...WallsFactory.create(),...WallsFactory.create(),)
-    this.stepsDuration = Number.MAX_VALUE;
   }
 
   _step(index: number) {
