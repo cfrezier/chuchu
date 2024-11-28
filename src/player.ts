@@ -18,7 +18,6 @@ export class Player {
   position: [number, number] = [0, 0];
   arrows: Arrow[] = [];
 
-  points = 0;
   totalPoints = 0;
   ratio: number = 0;
 
@@ -33,7 +32,6 @@ export class Player {
   }
 
   init(idx: number) {
-    this.points = 0;
     this.color = colors[idx];
     this.updateRatio();
   }
@@ -52,17 +50,14 @@ export class Player {
       color: this.color,
       name: this.name,
       position: this.position,
-      points: this.points,
-      total: this.totalPoints + this.points,
+      total: this.totalPoints,
       arrows: this.arrows.map(a => a.state())
     };
   }
 
   reward(time: number) {
-    this.totalPoints += this.points;
     this.time += time;
     this.updateRatio();
-    this.points = 0;
     this.ws?.send(JSON.stringify({type: 'score', score: this.totalPoints}));
   }
 
@@ -96,15 +91,15 @@ export class Player {
   }
 
   public updateRatio() {
-    this.ratio = (this.totalPoints + this.points) / (this.time + 1000);
+    this.ratio = (this.totalPoints) / (this.time + 1000);
   }
 
   absorb(absorbedObject: MovingObject) {
     if (absorbedObject instanceof Cat) {
-      this.points = Math.round(this.points / 2);
+      this.totalPoints = Math.round(this.totalPoints * 0.9);
     }
     if (absorbedObject instanceof Mouse) {
-      this.points++;
+      this.totalPoints++;
     }
   }
 

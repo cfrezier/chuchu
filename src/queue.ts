@@ -97,7 +97,6 @@ export class Queue {
   executeGame() {
     this.currentGame!.started = this.currentGame.players.length >= 1;
     this.currentGame!.execute(() => {
-      this.sendCurrentScoreToServer();
       this.sendHighScoreToServer();
       this.sendGameToServer();
       this.sendQueueUpdate();
@@ -126,22 +125,6 @@ export class Queue {
     const state = JSON.stringify({
       type: 'queue-state',
       state: {...this.currentGame?.state()}
-    });
-    this.servers.forEach((ws) => ws?.send(state));
-  }
-
-  private sendCurrentScoreToServer() {
-    const mostPlayedTime = Math.max(...this.players.map((p) => p.time));
-    const mostEfficientRatio = Math.max(...this.players.map((p) => p.ratio));
-    const leastEfficientRatio = Math.min(...this.players.map((p) => p.ratio));
-    const state = JSON.stringify({
-      type: 'game-score',
-      state: {players: (this.currentGame?.players ?? []).map(player => player.state())},
-      awards: {
-        mostPlayed: this.players.find(p => p.time === mostPlayedTime)?.state(),
-        mostEfficient: this.players.find(p => p.ratio === mostEfficientRatio)?.state(),
-        leastEfficient: this.players.find(p => p.ratio === leastEfficientRatio)?.state(),
-      }
     });
     this.servers.forEach((ws) => ws?.send(state));
   }

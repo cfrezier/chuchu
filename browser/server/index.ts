@@ -62,10 +62,6 @@ fetch('/config.json').then(config => {
             };
             queue.update(queue_payload);
             break;
-          case 'game-score':
-            score.updateScore(payload);
-            lastGameState = payload;
-            break;
           case 'score-state':
             score.updateHighScore(payload);
             break;
