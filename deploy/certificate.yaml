@@ -1,0 +1,21 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: app
+  namespace: chuchu
+spec:
+  dnsNames:
+    - chuchu.onepoint.game
+    - wss.chuchu.onepoint.game
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-http
+  privateKey:
+    algorithm: RSA
+    rotationPolicy: Always
+    size: 4096
+  secretName: chuchu-tls
+  subject:
+    organizationalUnits:
+      - provoly

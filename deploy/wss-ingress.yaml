@@ -1,0 +1,40 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wss
+  namespace: chuchu
+  labels:
+    app.kubernetes.io/part-of: chuchu
+    app.kubernetes.io/name: app
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/server-snippets: |
+      location / {
+       proxysetheader Upgrade $httpupgrade;
+       proxyhttpversion 1.1;
+       proxysetheader X-Forwarded-Host $httphost;
+       proxysetheader X-Forwarded-Proto $scheme;
+       proxysetheader X-Forwarded-For $remoteaddr;
+       proxysetheader Host $host;
+       proxysetheader Connection "upgrade";
+       proxycachebypass $httpupgrade;
+       }
+spec:
+  ingressClassName: open-nginx
+  tls:
+    - hosts:
+        - wss.chuchu.onepoint.game
+      secretName: chuchu-tls
+  rules:
+    - host: wss.chuchu.onepoint.game
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app
+                port:
+                  name: wss
