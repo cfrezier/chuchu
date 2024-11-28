@@ -4,7 +4,7 @@ import {MovingObject} from "./moving-object";
 
 export class NonMovingObject extends MovingObject {
 
-  override move(walls: Wall[], map: Arrow[][], speed: number) {
+  override move(walls: Wall[], arrows: Arrow[], speed: number) {
 
   }
 }

@@ -23,7 +23,6 @@ export class Game {
       this.players.push(player);
       player.init(this.players.length - 1);
       player.queued();
-      console.log(this.players.map(pl => pl.state()));
       if (this.players.length >= 1) {
         console.log('starting game execution...')
         this.queue.doneWaiting();
@@ -62,8 +61,8 @@ export class Game {
   execute(changeScoreListener: () => void) {
     let sendUpdate = false;
 
-    this.currentGenerator.mouses.forEach(mouse => mouse.move(this.currentGenerator.walls, this.players.map(player => player.arrows), this.currentGenerator.mouseSpeed));
-    this.currentGenerator.cats.forEach(cat => cat.move(this.currentGenerator.walls, this.players.map(player => player.arrows), this.currentGenerator.catSpeed));
+    this.currentGenerator.mouses.forEach(mouse => mouse.move(this.currentGenerator.walls, this.players.map(player => player.arrows).flat(), this.currentGenerator.mouseSpeed));
+    this.currentGenerator.cats.forEach(cat => cat.move(this.currentGenerator.walls, this.players.map(player => player.arrows).flat(), this.currentGenerator.catSpeed));
     this.currentGenerator.goals.map(goal => {
       const absorbed = goal.absorbing([...this.currentGenerator.mouses, ...this.currentGenerator.cats]);
       if (absorbed && absorbed.length > 0) {
@@ -78,16 +77,6 @@ export class Game {
         if (mouse.collides(cat)) {
           this.currentGenerator.remove([mouse]);
         }
-      });
-    });
-
-    [...this.currentGenerator.mouses, ...this.currentGenerator.cats].forEach(mouse => {
-      this.players.forEach(player => {
-        player.arrows.forEach(arrow => {
-          if (arrow.collides(mouse)) {
-            mouse.direction = arrow.direction;
-          }
-        });
       });
     });
 
