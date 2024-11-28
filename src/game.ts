@@ -20,16 +20,21 @@ export class Game {
 
   apply(player: Player) {
     if (!this.players.filter(player => player.connected).find(playerInGame => playerInGame.key === player.key)) {
-      this.players.push(player);
-      player.init(this.players.length - 1);
-      player.queued();
-      if (this.players.length >= 1) {
-        console.log('starting game execution...')
-        this.queue.doneWaiting();
-        this.queue.executeGame();
-        this.queue.sendQueueUpdate();
+      if (this.players.length <= CONFIG.MAX_PLAYERS) {
+        this.players.push(player);
+        player.init(this.players.length - 1);
+        player.queued();
+        if (this.players.length >= 1) {
+          console.log('starting game execution...')
+          this.queue.doneWaiting();
+          this.queue.executeGame();
+          this.queue.sendQueueUpdate();
+        }
+        this.queue.sendGameToServer();
+      } else {
+        console.log('Game full');
+        player.canQueue();
       }
-      this.queue.sendGameToServer();
     }
   }
 

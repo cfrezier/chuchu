@@ -4,13 +4,14 @@ import {DataMsg} from "./data.message";
 import {WebSocket} from "ws";
 import * as fs from "fs";
 import {CONFIG} from "../browser/common/config";
-import {StartingGenerator} from "./generators/starting-generator";
 
 export class Queue {
   players = [] as Player[];
   currentGame: Game;
   servers: (WebSocket | undefined)[] = [];
   path: string;
+  lastSave: string = '[]';
+  savePlanned = false;
 
   constructor(path: string) {
     this.path = path;
@@ -51,7 +52,6 @@ export class Queue {
         this.sendHighScoreToServer();
         break;
       case 'queue':
-
         const player = this.players.find((player) => payload.key === player.key);
         const playerInCurrentGame = this.currentGame?.players.find((player) => payload.key === player.key);
 
@@ -141,13 +141,21 @@ export class Queue {
   }
 
   private asyncSave() {
-    fs.writeFile(this.path, JSON.stringify(this.players.map(player => player.serializable())), 'utf8', (err) => {
-      if (!err) {
-        console.log(`State saved under ${this.path}`);
-      } else {
-        console.log('Cannot save', err);
-      }
-    });
+    this.lastSave = JSON.stringify(this.players.map(player => player.serializable()));
+
+    if (!this.savePlanned) {
+      this.savePlanned = true;
+      setTimeout(() => {
+        fs.writeFile(this.path, this.lastSave, 'utf8', (err) => {
+          this.savePlanned = false;
+          if (!err) {
+            console.log(`State saved under ${this.path}`);
+          } else {
+            console.log('Cannot save', err);
+          }
+        });
+      }, 1000);
+    }
   }
 
   doneWaiting() {
