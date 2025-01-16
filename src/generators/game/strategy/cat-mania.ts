@@ -1,9 +1,9 @@
-import {CONFIG} from "../../browser/common/config";
-import {Cat} from "../game/cat";
-import {GameGenerator} from "./game-generator";
-import {Player} from "../player";
+import {CONFIG} from "../../../../browser/common/config";
+import {Cat} from "../../../game/cat";
+import {GameStrategy} from "../game-strategy";
+import {Player} from "../../../player";
 
-export class CatManiaGenerator extends GameGenerator {
+export class CatMania extends GameStrategy {
   constructor(players: Player[]) {
     super(players);
     this.name = 'Cat Mania';

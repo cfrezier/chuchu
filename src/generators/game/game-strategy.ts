@@ -1,16 +1,16 @@
-import {Mouse} from "../game/mouse";
-import {Cat} from "../game/cat";
-import {Goal} from "../game/goal";
-import {Wall} from "../wall";
-import {MovingObject} from "../game/moving-object";
-import {GoalsFactory} from "./goals-factory";
-import {Player} from "../player";
-import {CONFIG} from "../../browser/common/config";
-import {WallsFactory} from "./walls-factory";
-import {Direction} from "../direction";
-import {Geometry} from "../geometry";
+import {Mouse} from "../../game/mouse";
+import {Cat} from "../../game/cat";
+import {Goal} from "../../game/goal";
+import {Wall} from "../../wall";
+import {MovingObject} from "../../game/moving-object";
+import {GoalFactory} from "../goal/goal-factory";
+import {Player} from "../../player";
+import {CONFIG} from "../../../browser/common/config";
+import {WallFactory} from "../wall/wall-factory";
+import {Direction} from "../../direction";
+import {Geometry} from "../../geometry";
 
-export abstract class GameGenerator {
+export abstract class GameStrategy {
   mouses: Mouse[] = [];
   cats: Cat[] = [];
   goals: Goal[] = [];
@@ -29,11 +29,11 @@ export abstract class GameGenerator {
   abstract _step(index: number): void;
 
   protected constructor(players: Player[]) {
-    this.goals = GoalsFactory.create(players);
-    this.walls = WallsFactory.create();
+    this.goals = GoalFactory.create(players);
+    this.walls = WallFactory.create(this.goals);
     this.goals.forEach(goal => {
       this.walls.forEach(wall => {
-        if(goal.collides(wall)) {
+        if (goal.collides(wall)) {
           this.walls = this.walls.filter(w => w !== wall);
         }
       });

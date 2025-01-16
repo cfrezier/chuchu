@@ -1,12 +1,14 @@
-import {CONFIG} from "../../browser/common/config";
-import {GameGenerator} from "./game-generator";
-import {Player} from "../player";
+import {CONFIG} from "../../../../browser/common/config";
+import {GameStrategy} from "../game-strategy";
+import {Player} from "../../../player";
 
-export class BaseGenerator extends GameGenerator {
+export class Hurry extends GameStrategy {
 
   constructor(players: Player[]) {
     super(players);
     this.name = 'Classic';
+    this.mouseSpeed = 3;
+    this.catSpeed = 2;
   }
 
   _step(index: number) {

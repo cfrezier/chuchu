@@ -1,6 +1,6 @@
-import {GameGenerator} from "./game-generator";
+import {GameStrategy} from "../game-strategy";
 
-export class StartingGenerator extends GameGenerator {
+export class StartingStrategy extends GameStrategy {
   constructor() {
     super([]);
     this.name = 'Starting';

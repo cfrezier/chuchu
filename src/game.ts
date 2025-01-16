@@ -1,21 +1,21 @@
 import {Player} from "./player";
 import {Queue} from "./queue";
 import {CONFIG} from "../browser/common/config";
-import {GameGenerator} from "./generators/game-generator";
-import {GeneratorFactory} from "./generators/generator-factory";
-import {StartingGenerator} from "./generators/starting-generator";
+import {GameStrategy} from "./generators/game/game-strategy";
+import {StartingStrategy} from "./generators/game/strategy/starting-strategy";
+import {StrategyFactory} from "./generators/game/strategy-factory";
 
 export class Game {
   players: Player[] = [];
   queue: Queue;
   started: boolean = false;
   ready = false;
-  currentGenerator: GameGenerator;
+  currentStrategy: GameStrategy;
   phases = 1;
 
   constructor(queue: Queue) {
     this.queue = queue;
-    this.currentGenerator = new StartingGenerator();
+    this.currentStrategy = new StartingStrategy();
   }
 
   apply(player: Player) {
@@ -41,7 +41,7 @@ export class Game {
   unapply(player: Player) {
     if (this.players.find(playerInGame => playerInGame.key === player.key)) {
       this.players = this.players.filter(playerInGame => playerInGame.key !== player.key);
-      this.currentGenerator.unapply(player);
+      this.currentStrategy.unapply(player);
       player.canQueue();
       if (this.players.length === 0) {
         this.started = false;
@@ -55,7 +55,7 @@ export class Game {
   state() {
     return {
       players: this.players.map(player => player.state()).sort((p1, p2) => p1.total - p2.total),
-      generator: this.currentGenerator.state(),
+      generator: this.currentStrategy.state(),
       width: CONFIG.GLOBAL_WIDTH,
       height: CONFIG.GLOBAL_HEIGHT,
       started: this.started,
@@ -66,32 +66,32 @@ export class Game {
   execute(changeScoreListener: () => void) {
     let sendUpdate = false;
 
-    this.currentGenerator.mouses.forEach(mouse => mouse.move(this.currentGenerator.walls, this.players.map(player => player.arrows).flat(), this.currentGenerator.mouseSpeed));
-    this.currentGenerator.cats.forEach(cat => cat.move(this.currentGenerator.walls, this.players.map(player => player.arrows).flat(), this.currentGenerator.catSpeed));
-    this.currentGenerator.goals.map(goal => {
-      const absorbed = goal.absorbing([...this.currentGenerator.mouses, ...this.currentGenerator.cats]);
+    this.currentStrategy.mouses.forEach(mouse => mouse.move(this.currentStrategy.walls, this.players.map(player => player.arrows).flat(), this.currentStrategy.mouseSpeed));
+    this.currentStrategy.cats.forEach(cat => cat.move(this.currentStrategy.walls, this.players.map(player => player.arrows).flat(), this.currentStrategy.catSpeed));
+    this.currentStrategy.goals.map(goal => {
+      const absorbed = goal.absorbing([...this.currentStrategy.mouses, ...this.currentStrategy.cats]);
       if (absorbed && absorbed.length > 0) {
         absorbed.forEach(absorbedObject => goal.player.absorb(absorbedObject));
-        this.currentGenerator.remove(absorbed);
+        this.currentStrategy.remove(absorbed);
         sendUpdate = true;
       }
     });
 
-    this.currentGenerator.mouses.forEach(mouse => {
-      this.currentGenerator.cats.forEach(cat => {
+    this.currentStrategy.mouses.forEach(mouse => {
+      this.currentStrategy.cats.forEach(cat => {
         if (mouse.collides(cat)) {
-          this.currentGenerator.remove([mouse]);
+          this.currentStrategy.remove([mouse]);
         }
       });
     });
 
     // Phase Management
-    this.currentGenerator.step();
-    if (this.currentGenerator.hasEnded()) {
-      this.currentGenerator = GeneratorFactory.next(this.currentGenerator, this.players);
+    this.currentStrategy.step();
+    if (this.currentStrategy.hasEnded()) {
+      this.currentStrategy = StrategyFactory.next(this.currentStrategy, this.players);
       this.players.forEach(player => player.arrows = []);
       this.phases++;
-      this.currentGenerator.reward(this.players);
+      this.currentStrategy.reward(this.players);
       sendUpdate = true;
     }
 
@@ -101,6 +101,6 @@ export class Game {
   }
 
   clear() {
-    this.currentGenerator = new StartingGenerator();
+    this.currentStrategy = new StartingStrategy();
   }
 }
