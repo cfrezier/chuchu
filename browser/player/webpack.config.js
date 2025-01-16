@@ -10,9 +10,14 @@ module.exports = {
     },
     module: {
         rules: [
+            {
+                test: /\.js$/,
+                enforce: "pre",
+                use: ["source-map-loader"],
+            },
             {test: /\.ts$/, loader: "ts-loader"}
         ]
     },
     devtool: 'source-map',
-    mode: "production"
+    mode: "development"
 }

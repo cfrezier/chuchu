@@ -40,7 +40,7 @@ fetch('/config.json').then(config => {
             const game_payload = {
               state: {
                 players: [],
-                generator: undefined,
+                strategy: undefined,
                 startDate: undefined,
                 width: 0,
                 height: 0,
@@ -53,7 +53,7 @@ fetch('/config.json').then(config => {
             const queue_payload = {
               state: {
                 players: [],
-                generator: undefined,
+                strategy: undefined,
                 startDate: undefined,
                 width: 0,
                 height: 0,

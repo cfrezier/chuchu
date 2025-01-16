@@ -55,7 +55,7 @@ export class Game {
   state() {
     return {
       players: this.players.map(player => player.state()).sort((p1, p2) => p1.total - p2.total),
-      generator: this.currentStrategy.state(),
+      strategy: this.currentStrategy.state(),
       width: CONFIG.GLOBAL_WIDTH,
       height: CONFIG.GLOBAL_HEIGHT,
       started: this.started,

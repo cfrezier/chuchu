@@ -11,7 +11,8 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node16",
     "allowJs": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "sourceMap": true
   },
   "include": [
     "src/**/*"

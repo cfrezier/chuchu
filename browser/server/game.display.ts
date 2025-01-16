@@ -64,8 +64,8 @@ export class GameDisplay {
       this.previousPayload = payload;
 
       this.drawGrid();
-      if (!!payload.state && !!payload.state.generator) {
-        this.drawGeneratorName(payload.state);
+      if (!!payload.state && !!payload.state.strategy) {
+        this.drawstrategyName(payload.state);
         this.drawWalls(payload.state);
         this.drawMouses(payload.state);
         this.drawCats(payload.state);
@@ -75,20 +75,20 @@ export class GameDisplay {
   }
 
   private drawMouses(state: any) {
-    state.generator.mouses.forEach((mouse: any) => {
+    state.strategy.mouses.forEach((mouse: any) => {
       this.drawRotated(this.mouseImg, mouse.position[0], mouse.position[1], this.angleFor(mouse.direction, 'mouse'));
     });
   }
 
   private drawCats(state: any) {
-    state.generator.cats.forEach((cat: any) => {
+    state.strategy.cats.forEach((cat: any) => {
       this.drawRotated(this.catImg, cat.position[0], cat.position[1], this.angleFor(cat.direction, 'cat'));
     });
   }
 
   private drawPlayers(state: any) {
     // player goal
-    state.generator.goals.forEach((goal: any) => {
+    state.strategy.goals.forEach((goal: any) => {
       this.context.drawImage(this.goalImg[goal.color], goal.position[0], goal.position[1], this.cellSize[0], this.cellSize[1]);
     });
 
@@ -110,7 +110,7 @@ export class GameDisplay {
   }
 
   private drawWalls(state: any) {
-    state.generator.walls.forEach((wall: any) => {
+    state.strategy.walls.forEach((wall: any) => {
       this.context.drawImage(this.wallImg, wall.position[0], wall.position[1], this.cellSize[0], this.cellSize[1]);
     });
   }
@@ -170,10 +170,10 @@ export class GameDisplay {
     }
   }
 
-  private drawGeneratorName(state: any) {
+  private drawstrategyName(state: any) {
     this.context.fillStyle = "#a0ffff";
     this.context.font = "50px Arial";
     this.context.textAlign = "center";
-    this.context.fillText(state.generator.name, CONFIG.GLOBAL_HEIGHT / 2, 100);
+    this.context.fillText(state.strategy.name, CONFIG.GLOBAL_HEIGHT / 2, 100);
   }
 }
