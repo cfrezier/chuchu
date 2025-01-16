@@ -1,11 +1,11 @@
 import {GameStrategy} from "./game-strategy";
-import {BaseStrategy} from "./strategy/base-strategy";
-import {MouseMania} from "./strategy/mouse-mania";
-import {CatMania} from "./strategy/cat-mania";
+import {BaseStrategy} from "./impl/base-strategy";
+import {MouseMania} from "./impl/mouse-mania";
+import {CatMania} from "./impl/cat-mania";
 import {Player} from "../../player";
-import {StartingStrategy} from "./strategy/starting-strategy";
-import {Hurry} from "./strategy/hurry";
-import {ManyWalls} from "./strategy/many-wall";
+import {StartingStrategy} from "./impl/starting-strategy";
+import {Hurry} from "./impl/hurry";
+import {ManyWalls} from "./impl/many-wall";
 
 export class StrategyFactory {
   static baseStrategy: any = BaseStrategy;

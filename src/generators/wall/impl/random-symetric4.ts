@@ -1,7 +1,7 @@
-import {Goal} from "../../../game/goal";
 import {Wall} from "../../../wall";
 import {Geometry} from "../../../geometry";
 import {CONFIG} from "../../../../browser/common/config";
+import {Goal} from "../../../game/impl/goal";
 
 export class RandomSymetric4 {
   static implement(howMany: number, goals: Goal[]): Wall[] {

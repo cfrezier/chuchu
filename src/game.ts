@@ -1,9 +1,9 @@
 import {Player} from "./player";
 import {Queue} from "./queue";
 import {CONFIG} from "../browser/common/config";
-import {GameStrategy} from "./generators/game/game-strategy";
-import {StartingStrategy} from "./generators/game/strategy/starting-strategy";
-import {StrategyFactory} from "./generators/game/strategy-factory";
+import {GameStrategy} from "./generators/strategy/game-strategy";
+import {StartingStrategy} from "./generators/strategy/impl/starting-strategy";
+import {StrategyFactory} from "./generators/strategy/strategy-factory";
 
 export class Game {
   players: Player[] = [];

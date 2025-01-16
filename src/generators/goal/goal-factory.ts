@@ -1,21 +1,14 @@
-import {Goal} from "../../game/goal";
-import {Player} from "../../player";
-import {CONFIG} from "../../../browser/common/config";
-import {Geometry} from "../../geometry";
+import {Goal} from "../../game/impl/goal";
+import {RandomPlacement} from "./impl/random-placement";
+import {Wall} from "../../wall";
+import {EquiPlacement} from "./impl/equi-placement";
 
 export class GoalFactory {
-  static create(players: Player[]): Goal[] {
-    return GoalsInLineFactory.implement(players);
+
+  static strategies: any[] = [EquiPlacement, RandomPlacement];
+
+  static create(goals: Goal[]): Wall[] {
+    return GoalFactory.strategies[Math.floor(Math.random() * 13982845) % GoalFactory.strategies.length].implement(Math.floor(Math.random() * 1000 % 5), goals);
   }
 }
 
-export class GoalsInLineFactory {
-  static implement(players: Player[]): Goal[] {
-    // TODO: generate a correct repartition of players in empty spaces, according to number of players
-    return players.map(player => {
-      const cell = Geometry.randomCell();
-      const cellPosition = [(cell[0] / CONFIG.COLUMNS) * CONFIG.GLOBAL_WIDTH, (cell[1] / CONFIG.ROWS) * CONFIG.GLOBAL_HEIGHT] as [number, number];
-      return new Goal(cellPosition, 'up', player)
-    })
-  }
-}

@@ -1,6 +1,5 @@
 import {Mouse} from "../../game/mouse";
 import {Cat} from "../../game/cat";
-import {Goal} from "../../game/goal";
 import {Wall} from "../../wall";
 import {MovingObject} from "../../game/moving-object";
 import {GoalFactory} from "../goal/goal-factory";
@@ -9,6 +8,7 @@ import {CONFIG} from "../../../browser/common/config";
 import {WallFactory} from "../wall/wall-factory";
 import {Direction} from "../../direction";
 import {Geometry} from "../../geometry";
+import {Goal} from "../../game/impl/goal";
 
 export abstract class GameStrategy {
   mouses: Mouse[] = [];
