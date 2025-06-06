@@ -1,0 +1,48 @@
+<html>
+<head>
+    <title>chuchu - joueur</title>
+    <link rel="stylesheet" href="/player.css">
+    <script type="text/javascript" src="/js/player/index.js"></script>
+    <meta name="viewport"
+          content="width=device-width, height=device-height, initial-scale=1, minimum-scale=1, maximum-scale=1"/>
+</head>
+<body>
+<a href="https://github.com/cfrezier/chuchu" target="_blank" style="position: absolute; top: 0; right: 0; z-index: 1000;">
+    <img src="/img/fork-me-on-github.svg" alt="Fork me on GitHub" style="height: 200px;">
+</a>
+<div class="main">
+    <div class="name" id="panel-name">
+        <label for="input-name">Ton nom :</label>
+        <input type="text" id="input-name">
+        <button class="btn" id="btn-name">Valider</button>
+    </div>
+    <div class="queue" id="panel-queue">
+        <button class="btn queue" id="queue">Rentrer dans la file d'attente</button>
+    </div>
+    <div class="input" id="panel-score"></div>
+    <div class="input" id="panel-input">
+        <div id="player-label"></div>
+        <div class="pad">
+            <div class="trackpad" id="trackpad"></div>
+            <div class="buttons">
+                <button class="btn" id="arrow-up">&#8593;</button>
+                <div class="middle-arrows">
+                    <button class="btn" id="arrow-left">&#8592;</button>
+                    <button class="btn" id="arrow-right">&#8594;</button>
+                </div>
+                <button class="btn" id="arrow-down">&#8595;</button>
+            </div>
+        </div>
+        <button class="btn" id="quit">Quitter</button>
+    </div>
+    <div class="wait">
+        <div class="loader"></div>
+    </div>
+    <div class="id"></div>
+    <div class="reload">
+        <button class="btn btn-reload">Recharger</button>
+    </div>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,179 @@
+* {
+    transition: all 0.6s;
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    display: grid;
+    grid-template-areas:
+            "nav nav"
+            "qr-code draw"
+            "queue draw"
+            "highscore draw";
+    grid-template-rows: 40px 250px 1fr 2fr;
+    grid-template-columns: 250px 1fr;
+    font-family: 'Tahoma';
+    background-color: black;
+    color: white;
+    width: 100vw;
+    height: 100vh;
+    gap: 10px;
+    overflow: hidden;
+    padding: 10px;
+}
+
+.nav {
+    grid-area: nav;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 30px;
+}
+
+.draw {
+    grid-area: draw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.draw > .game-canvas {
+    flex: 1 1;
+    background-image: url('./img/onepoint.png');
+    background-position: center 50%, center calc(50% - 40px);
+    background-repeat: no-repeat;
+}
+
+.debug-game-state {
+    opacity: 0.5;
+    display: none;
+}
+
+.queue {
+    grid-area: queue;
+    color: black;
+    background-color: white;
+    border-radius: 10px;
+    padding: 5px;
+    font-size: 20px;
+}
+
+.score {
+    grid-area: score;
+}
+
+.highscore {
+    grid-area: highscore;
+    color: #009EDF;
+    background-color: white;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 20px;
+
+    .header {
+        font-weight: bold;
+        padding-bottom: 20px;
+    }
+}
+
+.qr-code {
+    grid-area: qr-code;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.highscore-content, .score-content {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+}
+
+.score {
+    color: white;
+    background-color: #009EDF;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 20px;
+
+    .header {
+        font-weight: bold;
+        padding-bottom: 20px;
+    }
+}
+
+.score-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: 15px;
+
+    &:nth-child(1) {
+        font-size: 24px;
+    }
+
+    &:nth-child(2) {
+        font-size: 22px;
+    }
+
+    &:nth-child(3) {
+        font-size: 18px;
+    }
+}
+
+p {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+h1 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.header {
+    font-size: 1.5rem;
+    line-height: 1.5rem;
+    font-weight: 400;
+    display: flex;
+    justify-content: center;
+    text-align: center
+}
+
+.queue-content {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 3px;
+
+    > p {
+        border-radius: 10px;
+        color: black;
+        padding: 1px 5px;
+    }
+}
+
+.awards {
+    margin-left: auto;
+    margin-right: 50px;
+}
+
+.remarkable {
+    border-radius: 10px;
+    padding: 5px;
+    color: black;
+    margin-right: 10px;
+}
+
+.remarkable-text {
+    padding: 5px;
+}
+
+.queue-time.header {
+    color: #009EDF;
+}
