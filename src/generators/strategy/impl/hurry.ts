@@ -6,7 +6,7 @@ export class Hurry extends GameStrategy {
 
   constructor(players: Player[]) {
     super(players);
-    this.name = 'Classic';
+    this.name = 'Hurry Up';
     this.mouseSpeed = 3;
     this.catSpeed = 2;
   }

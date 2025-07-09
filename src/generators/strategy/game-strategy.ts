@@ -18,7 +18,7 @@ export abstract class GameStrategy {
   mouseSpeed: number = 1;
   catSpeed: number = 1;
   elapsedSteps = 0;
-  stepsDuration = CONFIG.STEP_DURATION * 2;
+  stepsDuration = CONFIG.STEP_DURATION;
   name: string = '---';
   mouseStarts: Start[] = [];
   catStarts: Start[] = [];
@@ -49,30 +49,15 @@ export abstract class GameStrategy {
     const baseMouseSpeed = this.mouseSpeed;
     const baseCatSpeed = this.catSpeed;
 
-    let speedFactor = 1;
-    switch (CONFIG.ROWS) {
-      case 15:
-        speedFactor = 2; // Plus de cases, vitesse plus lente
-        break;
-      case 21:
-        speedFactor = 1; // Taille moyenne, vitesse normale
-        break;
-      case 25:
-        speedFactor = 0.75; // Moins de cases, vitesse plus rapide
-        break;
-      case 31:
-        speedFactor = 0.5; // Très peu de cases, vitesse très rapide
-        break;
-      case 35:
-        speedFactor = 0.3; // Plateau très petit, vitesse extrêmement rapide
-        break;
-      case 41:
-        speedFactor = 0.25; // Plateau très petit, vitesse extrêmement rapide
-        break;
-      case 45:
-        speedFactor = 0.1; // Plateau très petit, vitesse extrêmement rapide
-        break;
-    }
+    // Formule linéaire :
+    // Calcul dynamique de a et b pour la formule linéaire
+    // Pour 15 cases : vitesse = 2
+    // Pour 45 cases : vitesse = 0.15
+    const x1 = 15, y1 = 4;
+    const x2 = 45, y2 = 0.2;
+    const a = (y2 - y1) / (x2 - x1); // pente
+    const b = y1 - a * x1;           // ordonnée à l'origine
+    const speedFactor = a * CONFIG.ROWS + b;
 
     this.mouseSpeed = baseMouseSpeed * speedFactor;
     this.catSpeed = baseCatSpeed * speedFactor;
