@@ -28,7 +28,7 @@ data:
       "ROWS": 2,
       "COLUMNS": 2,
       "MAX_PHASES": 10,
-      "STEP_DURATION": 10000,
+      "STEP_DURATION": 20000,
       "CLASSIC_STEP_GENERATION": 50,
       "PLAYER_ABSORB_CAT_RATIO": 0.5,
       "PLAYER_ABSORB_MOUSE_POINTS": 1,
