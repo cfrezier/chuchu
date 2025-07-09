@@ -23,4 +23,4 @@ export const CONFIG = {
   MAX_MOUSES: 200,
   MAX_CATS: 20,
   BOT_LIMIT_ACTIONS_MS: 1000
-};
+} as Record<string, any>;
