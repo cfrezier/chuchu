@@ -34,12 +34,16 @@ export class GameDisplay {
     this.wallImg.src = "/img/wall.svg";
 
     colors.forEach((color) => {
-      this.goalImg[color] = goalImg(color);
-      this.cursorImg[color] = cursorImg(color);
-      this.arrowImg[color] = arrowImg(color);
+      this.initImagesForColor(color);
     });
 
     setTimeout(() => this.init(), 100);
+  }
+
+  private initImagesForColor(color: string) {
+    this.goalImg[color] = goalImg(color);
+    this.cursorImg[color] = cursorImg(color);
+    this.arrowImg[color] = arrowImg(color);
   }
 
   resize(cols: number, rows: number) {
@@ -116,7 +120,10 @@ export class GameDisplay {
       this.context.beginPath();
       this.context.arc(player.position[0], player.position[1], 3, 0, 2 * Math.PI, true);
       this.context.fill();
-
+      if(this.cursorImg[player.color] === undefined) {
+        console.warn(`Cursor image for color ${player.color} not found.`);
+        this.initImagesForColor(player.color);
+      }
       this.context.drawImage(this.cursorImg[player.color], player.position[0], player.position[1], this.cellSize[0], this.cellSize[1]);
       //player arrows
       (player.arrows || []).forEach((arrow: any) => {

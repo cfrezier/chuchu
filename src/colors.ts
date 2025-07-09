@@ -30,5 +30,6 @@ export const colors = [
   '#33FFFF',
   '#C1DFDF',
   '#FFFF33',
-  '#FF9933'
+  '#FF9933',
+  '#000000'
 ];
