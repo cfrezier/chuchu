@@ -4,20 +4,14 @@ import {GameDisplay} from "./game.display";
 import {QrCodeDisplay} from "./qrcode.display";
 import {createWs} from '../common/ws';
 import {CONFIG} from "../common/config";
-import AwardDisplay from "./award.display";
 
 const queue = new QueueDisplay();
 const score = new ScoreDisplay();
 const game = new GameDisplay();
 const qrcode = new QrCodeDisplay();
-const award = new AwardDisplay();
 
 let ws: WebSocket;
 let lastGameState: any = null;
-
-setInterval(() => {
-  award.update(lastGameState);
-}, 1000);
 
 fetch('/config.json').then(config => {
   config.json().then(json => {
@@ -35,52 +29,53 @@ fetch('/config.json').then(config => {
       ws.addEventListener("message", function (event) {
         const payload = JSON.parse(event.data.toString());
 
+        function decodeObj(arr: any[] = [], extra: any = {}) {
+          return arr.map((o: any) => ({
+            position: o.p,
+            direction: o.d,
+            color: o.c,
+            ...extra
+          }));
+        }
+
+        function decodeState(state: any) {
+          return {
+            ...lastGameState,
+            players: state.p ? ((state.p).map((pl: any) => ({
+              color: pl.c,
+              name: pl.n,
+              position: pl.p,
+              total: pl.t,
+              arrows: decodeObj(pl.a)
+            }))) : lastGameState?.players,
+            strategy: state.s ? {
+              mouses: decodeObj(state.s.m),
+              cats: decodeObj(state.s.c),
+              goals: decodeObj(state.s.g),
+              walls: decodeObj(state.s.w),
+              name: state.s.n
+            } : lastGameState?.strategy,
+            width: state.w || lastGameState?.width,
+            height: state.h || lastGameState?.height,
+            started: state.st || lastGameState?.started,
+            ready: state.r || lastGameState?.ready,
+            cols: state.c || lastGameState?.cols,
+            rows: state.ro || lastGameState?.rows
+          };
+        }
+
+        // Appliquer la décompression si besoin
+        if (payload.state) {
+          payload.state = decodeState(payload.state);
+          lastGameState = payload.state; // Mémoriser le dernier état du jeu
+        }
+
         switch (payload.type) {
           case 'game-state':
-            // Décodage des clés courtes vers format lisible par le client
-            const state = payload.state;
-            const decodeObj = (arr: any[] = [], extra: any = {}) => arr.map((o: any) => ({
-              position: o.p,
-              direction: o.d,
-              color: o.c,
-              ...extra
-            }));
-            const decodedState = {
-              players: (state.p || []).map((pl: any) => ({
-                color: pl.c,
-                name: pl.n,
-                position: pl.p,
-                total: pl.t,
-                arrows: decodeObj(pl.a)
-              })),
-              strategy: {
-                mouses: decodeObj(state.s?.m),
-                cats: decodeObj(state.s?.c),
-                goals: decodeObj(state.s?.g),
-                walls: decodeObj(state.s?.w),
-                name: state.s?.n
-              },
-              width: state.w,
-              height: state.h,
-              started: state.st,
-              ready: state.r,
-              cols: state.c,
-              rows: state.ro
-            };
-            game.display({state: decodedState});
+            game.display({state: payload.state});
             break;
           case 'queue-state':
-            const queue_payload = {
-              state: {
-                players: [],
-                strategy: undefined,
-                startDate: undefined,
-                width: 0,
-                height: 0,
-                finished: true
-              }, ...payload
-            };
-            queue.update(queue_payload);
+            queue.update(payload);
             break;
           case 'score-state':
             score.updateHighScore(payload);

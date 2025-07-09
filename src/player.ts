@@ -42,7 +42,7 @@ export class Player {
   }
 
   move(payload: { type: "input"; x: number; y: number }) {
-    this.position = [payload.x * CONFIG.GLOBAL_WIDTH, payload.y * CONFIG.GLOBAL_HEIGHT];
+    this.position = [Math.round(payload.x * CONFIG.GLOBAL_WIDTH), Math.round(payload.y * CONFIG.GLOBAL_HEIGHT)];
   }
 
   state() {

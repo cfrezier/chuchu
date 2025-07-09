@@ -174,7 +174,7 @@ export class Queue {
   private state() {
     const list = [...this.players.map(player => player.state())];
     list.sort((p1, p2) => p2.t - p1.t);
-    return {players: list.slice(0, 10)};
+    return {p: list.slice(0, 10)};
   }
 
   private asyncSave() {

@@ -121,11 +121,13 @@ export class Game {
 
     // Limite globale d'action des bots
     const now = Date.now();
-    const botCooldown = CONFIG.BOT_LIMIT_ACTIONS_MS || 500;
+    const botCooldown = CONFIG.BOT_LIMIT_ACTIONS_MS || 1000;
     let canBotsAct = false;
     if (now - this.lastBotActionTime >= botCooldown) {
+      canBotsAct = true;
       this.lastBotActionTime = now;
-
+    }
+    if (canBotsAct) {
       this.bots.forEach(bot => {
         bot.play();
       });
