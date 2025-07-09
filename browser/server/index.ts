@@ -71,13 +71,13 @@ fetch('/config.json').then(config => {
         }
 
         switch (payload.type) {
-          case 'game-state':
+          case 'GAME_':
             game.display({state: payload.state});
             break;
-          case 'queue-state':
+          case 'QU_':
             queue.update(payload);
             break;
-          case 'score-state':
+          case 'SC_':
             score.updateHighScore(payload);
             break;
         }

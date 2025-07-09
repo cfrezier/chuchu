@@ -149,25 +149,25 @@ export class Queue {
     this.previousGameState = currentState;
 
     if (Object.keys(diff).length > 0) {
-      const state = JSON.stringify({type: 'game-state', state: diff});
+      const state = JSON.stringify({type: 'GAME_', state: diff});
       this.servers.forEach((ws) => ws?.send(state));
     }
   }
 
   public sendGameTo(ws: WebSocket) {
-    ws.send(JSON.stringify({type: 'game-state', state: this.currentGame?.state()}));
+    ws.send(JSON.stringify({type: 'GAME_', state: this.currentGame?.state()}));
   }
 
   public sendQueueUpdate() {
     const state = JSON.stringify({
-      type: 'queue-state',
+      type: 'QU_',
       state: {...this.currentGame?.state()}
     });
     this.servers.forEach((ws) => ws?.send(state));
   }
 
   private sendHighScoreToServer() {
-    const state = JSON.stringify({type: 'score-state', state: this.state()});
+    const state = JSON.stringify({type: 'SC_', state: this.state()});
     this.servers.forEach((ws) => ws?.send(state));
   }
 
