@@ -7,7 +7,7 @@ export class Start extends NonMovingObject {
   startId: string;
 
   constructor(position: [number, number], direction: Direction) {
-    super(position, direction);
+    super(position.map(p => Math.round(p)) as [number, number], direction);
     this.startId = v4();
   }
 

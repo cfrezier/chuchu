@@ -18,15 +18,15 @@ export class Geometry {
 
     switch (direction) {
       case 'up':
-        return [position[0], position[1] - speed];
+        return [Math.round(position[0]), Math.round(position[1] - speed)];
       case 'down':
-        return [position[0], position[1] + speed];
+        return [Math.round(position[0]), Math.round(position[1] + speed)];
       case 'left':
-        return [position[0] - speed, position[1]];
+        return [Math.round(position[0] - speed), Math.round(position[1])];
       case 'right':
-        return [position[0] + speed, position[1]];
+        return [Math.round(position[0] + speed), Math.round(position[1])];
       default:
-        return [position[0], position[1] - speed];
+        return [Math.round(position[0]), Math.round(position[1] - speed)];
     }
   }
 
