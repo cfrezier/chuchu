@@ -42,16 +42,16 @@ export class MovingObject {
       this.position[0] = 0;
       this.direction = DirectionUtils.next(this.direction);
       this.lastCollide = "-----";
-    } else if (this.position[0] > CONFIG.GLOBAL_WIDTH - this.size[0]) {
-      this.position[0] = CONFIG.GLOBAL_WIDTH - this.size[0];
+    } else if (this.position[0] > CONFIG.GLOBAL_WIDTH - this.size[0] + 3) {
+      this.position[0] = Math.round(CONFIG.GLOBAL_WIDTH - this.size[0]);
       this.direction = DirectionUtils.next(this.direction);
       this.lastCollide = "-----";
     } else if (this.position[1] < 0) {
       this.position[1] = 0;
       this.direction = DirectionUtils.next(this.direction);
       this.lastCollide = "-----";
-    } else if (this.position[1] > CONFIG.GLOBAL_HEIGHT - this.size[1]) {
-      this.position[1] = CONFIG.GLOBAL_HEIGHT - this.size[1];
+    } else if (this.position[1] > CONFIG.GLOBAL_HEIGHT - this.size[1] + 3) {
+      this.position[1] = Math.round(CONFIG.GLOBAL_HEIGHT - this.size[1]);
       this.direction = DirectionUtils.next(this.direction);
       this.lastCollide = "-----";
     }
