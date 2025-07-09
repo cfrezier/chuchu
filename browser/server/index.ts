@@ -37,17 +37,37 @@ fetch('/config.json').then(config => {
 
         switch (payload.type) {
           case 'game-state':
-            const game_payload = {
-              state: {
-                players: [],
-                strategy: undefined,
-                startDate: undefined,
-                width: 0,
-                height: 0,
-                finished: true
-              }, ...payload
+            // Décodage des clés courtes vers format lisible par le client
+            const state = payload.state;
+            const decodeObj = (arr: any[] = [], extra: any = {}) => arr.map((o: any) => ({
+              position: o.p,
+              direction: o.d,
+              color: o.c,
+              ...extra
+            }));
+            const decodedState = {
+              players: (state.p || []).map((pl: any) => ({
+                color: pl.c,
+                name: pl.n,
+                position: pl.p,
+                total: pl.t,
+                arrows: decodeObj(pl.a)
+              })),
+              strategy: {
+                mouses: decodeObj(state.s?.m),
+                cats: decodeObj(state.s?.c),
+                goals: decodeObj(state.s?.g),
+                walls: decodeObj(state.s?.w),
+                name: state.s?.n
+              },
+              width: state.w,
+              height: state.h,
+              started: state.st,
+              ready: state.r,
+              cols: state.c,
+              rows: state.ro
             };
-            game.display(game_payload);
+            game.display({state: decodedState});
             break;
           case 'queue-state':
             const queue_payload = {

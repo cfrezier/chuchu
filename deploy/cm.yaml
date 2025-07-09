@@ -18,7 +18,7 @@ data:
       "MIN_PLAYERS": 2,
       "QUEUE_TIME": 10,
       "RETRY_TIME": 10,
-      "BOTS": 0,
+      "BOTS": 5,
       "SERVER_PORT": 8080,
       "WSS_PORT": 8081,
       "WSS_EXTERNAL_URL": "wss://wss.chuchu.onepoint.game",
@@ -33,5 +33,6 @@ data:
       "PLAYER_ABSORB_CAT_RATIO": 0.5,
       "PLAYER_ABSORB_MOUSE_POINTS": 1,
       "MAX_MOUSES": 200,
-      "MAX_CATS": 20
+      "MAX_CATS": 20,
+      "BOT_LIMIT_ACTIONS_MS": 500
     }

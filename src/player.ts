@@ -47,11 +47,11 @@ export class Player {
 
   state() {
     return {
-      color: this.color,
-      name: this.name,
-      position: this.position,
-      total: this.totalPoints,
-      arrows: this.arrows.map(a => a.state())
+      c: this.color, // color
+      n: this.name, // name
+      p: this.position, // position
+      t: this.totalPoints, // total
+      a: this.arrows.map(a => a.state()) // arrows
     };
   }
 
@@ -126,4 +126,3 @@ export class Player {
     this.arrows.push(new Arrow(gridAligned, payload.direction, this));
   }
 }
-

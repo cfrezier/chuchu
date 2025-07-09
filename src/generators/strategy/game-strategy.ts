@@ -41,11 +41,11 @@ export abstract class GameStrategy {
 
   state() {
     return {
-      mouses: this.mouses.map(m => m.state()),
-      cats: this.cats.map(c => c.state()),
-      goals: this.goals.map(g => g.state()),
-      walls: this.walls.map(w => w.state()),
-      name: this.name
+      m: this.mouses.map(m => m.state()), // mouses
+      c: this.cats.map(c => c.state()), // cats
+      g: this.goals.map(g => g.state()), // goals
+      w: this.walls.map(w => w.state()), // walls
+      n: this.name // name
     }
   }
 

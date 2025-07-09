@@ -10,4 +10,11 @@ export class Wall extends NonMovingObject {
     this.wallId = v4();
   }
 
+  state() {
+    return {
+      p: this.position, // position
+      d: this.direction // direction
+    };
+  }
+
 }

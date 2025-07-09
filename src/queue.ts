@@ -173,7 +173,7 @@ export class Queue {
 
   private state() {
     const list = [...this.players.map(player => player.state())];
-    list.sort((p1, p2) => p2.total - p1.total);
+    list.sort((p1, p2) => p2.t - p1.t);
     return {players: list.slice(0, 10)};
   }
 

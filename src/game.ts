@@ -84,14 +84,14 @@ export class Game {
 
   state() {
     return {
-      players: this.players.map(player => player.state()).sort((p1, p2) => p1.total - p2.total),
-      strategy: this.currentStrategy.state(),
-      width: CONFIG.GLOBAL_WIDTH,
-      height: CONFIG.GLOBAL_HEIGHT,
-      started: this.started,
-      ready: this.ready,
-      cols: CONFIG.COLUMNS,
-      rows: CONFIG.ROWS
+      p: this.players.map(player => player.state()).sort((p1, p2) => p1.t - p2.t), // players
+      s: this.currentStrategy.state(), // strategy
+      w: CONFIG.GLOBAL_WIDTH, // width
+      h: CONFIG.GLOBAL_HEIGHT, // height
+      st: this.started, // started
+      r: this.ready, // ready
+      c: CONFIG.COLUMNS, // cols
+      ro: CONFIG.ROWS // rows
     }
   }
 

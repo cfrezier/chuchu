@@ -63,9 +63,8 @@ export class MovingObject {
 
   state() {
     return {
-      position: this.position,
-      direction: this.direction
-    }
+      p: this.position, // position
+      d: this.direction // direction
+    };
   }
 }
-
