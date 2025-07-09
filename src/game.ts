@@ -54,6 +54,7 @@ export class Game {
         if (this.players.length > CONFIG.MIN_PLAYERS) {
           console.log('starting game execution...')
           this.currentStrategy = StrategyFactory.next(this.currentStrategy, this.players);
+          this.currentStrategy.applySpeedCorrection();
           this.queue.doneWaiting();
           this.queue.executeGame();
           this.queue.sendQueueUpdate();
@@ -157,6 +158,7 @@ export class Game {
     if (this.currentStrategy.hasEnded()) {
       this.currentStrategy.reward(this.players);
       this.currentStrategy = StrategyFactory.next(this.currentStrategy, this.players);
+      this.currentStrategy.applySpeedCorrection();
       this.players.forEach(player => player.arrows = []);
       this.phases++;
       sendUpdate = true;

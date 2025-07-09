@@ -23,6 +23,7 @@ export abstract class GameStrategy {
   mouseStarts: Start[] = [];
   catStarts: Start[] = [];
   startDate: number;
+  speedAdjusted = false;
 
   abstract _step(index: number): void;
 
@@ -32,6 +33,49 @@ export abstract class GameStrategy {
     this.catStarts = new Array(Math.round((Math.random() * 1000 % 2) + 1)).fill(1).map(() => new Start(Geometry.randomCell(), Geometry.randomDirection()));
     this.walls = WallFactory.create([...this.goals, ...this.mouseStarts, ...this.catStarts]);
     this.startDate = Date.now();
+  }
+
+  /**
+   * Corrige la vitesse des objets selon la taille des cases du plateau.
+   * La vitesse de base de la stratégie (this.mouseSpeed/catSpeed) est ajustée dynamiquement.
+   */
+  applySpeedCorrection() {
+    if(this.speedAdjusted) {
+      return;
+    }
+    this.speedAdjusted = true;
+
+    // On part de la vitesse souhaitée par la stratégie (valeur courante)
+    const baseMouseSpeed = this.mouseSpeed;
+    const baseCatSpeed = this.catSpeed;
+
+    let speedFactor = 1;
+    switch (CONFIG.ROWS) {
+      case 15:
+        speedFactor = 2; // Plus de cases, vitesse plus lente
+        break;
+      case 21:
+        speedFactor = 1; // Taille moyenne, vitesse normale
+        break;
+      case 25:
+        speedFactor = 0.75; // Moins de cases, vitesse plus rapide
+        break;
+      case 31:
+        speedFactor = 0.5; // Très peu de cases, vitesse très rapide
+        break;
+      case 35:
+        speedFactor = 0.3; // Plateau très petit, vitesse extrêmement rapide
+        break;
+      case 41:
+        speedFactor = 0.25; // Plateau très petit, vitesse extrêmement rapide
+        break;
+      case 45:
+        speedFactor = 0.1; // Plateau très petit, vitesse extrêmement rapide
+        break;
+    }
+
+    this.mouseSpeed = baseMouseSpeed * speedFactor;
+    this.catSpeed = baseCatSpeed * speedFactor;
   }
 
   step(): void {

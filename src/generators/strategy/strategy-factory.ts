@@ -12,12 +12,16 @@ export class StrategyFactory {
   static otherStrategies: any[] = [MouseMania, CatMania, Hurry, ManyWalls];
 
   static next(previous: GameStrategy, players: Player[]) {
+    let strategy = null;
     switch (true) {
       case previous instanceof StartingStrategy:
       case !(previous instanceof BaseStrategy):
-        return new StrategyFactory.baseStrategy(players);
+        strategy = new StrategyFactory.baseStrategy(players);
+        break;
       default:
-        return new StrategyFactory.otherStrategies[Math.floor(Math.random() * 13982845) % StrategyFactory.otherStrategies.length](players);
+        strategy = new StrategyFactory.otherStrategies[Math.floor(Math.random() * 13982845) % StrategyFactory.otherStrategies.length](players);
     }
+    strategy.applySpeedCorrection();
+    return strategy
   }
 }
