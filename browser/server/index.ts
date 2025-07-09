@@ -29,10 +29,19 @@ fetch('/config.json').then(config => {
       ws.addEventListener("message", function (event) {
         const payload = JSON.parse(event.data.toString());
 
+        function decodeDirection(d: string) {
+          switch (d) {
+            case 'R': return 'right';
+            case 'L': return 'left';
+            case 'U': return 'up';
+            case 'D': return 'down';
+            default: return d;
+          }
+        }
         function decodeObj(arr: any[] = [], extra: any = {}) {
           return arr.map((o: any) => ({
             position: o.p,
-            direction: o.d,
+            direction: decodeDirection(o.d),
             color: o.c,
             ...extra
           }));
