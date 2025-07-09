@@ -12,8 +12,6 @@ import {MovingObject} from "./game/moving-object";
 
 export class Bot extends Player {
   private game: Game;
-  private lastArrowTime: number = 0;
-  private arrowCooldown: number = 1000;
   private pendingArrowDirection: 'up' | 'down' | 'left' | 'right' | null = null;
 
   constructor(game: Game, name: string = 'Bot') {
@@ -23,9 +21,6 @@ export class Bot extends Player {
 
   // Nouvelle méthode principale pour placer une flèche optimisée
   public play() {
-    const now = Date.now();
-    if (now - this.lastArrowTime < this.arrowCooldown) return;
-    this.lastArrowTime = now;
     const mice: Mouse[] = this.game.currentStrategy.mouses;
     const cats: Cat[] = this.game.currentStrategy.cats;
     const myGoal: Goal | undefined = this.game.currentStrategy.goals.find(g => g.player.key === this.key);
@@ -214,13 +209,19 @@ export class Bot extends Player {
               const py = mouse.position[1] + mdy * t * (toGoal[1] / 20);
               // Vérifie les goals adverses
               for (const otherGoal of this.game.currentStrategy.goals) {
-                if (otherGoal.player.key !== this.key && typeof otherGoal.collides === 'function' && otherGoal.collides({position: [px, py], size: [cellSizeX, cellSizeY]} as MovingObject)) {
+                if (otherGoal.player.key !== this.key && typeof otherGoal.collides === 'function' && otherGoal.collides({
+                  position: [px, py],
+                  size: [cellSizeX, cellSizeY]
+                } as MovingObject)) {
                   crossesAdverseGoal = true;
                 }
               }
               // Vérifie les murs
               for (const wall of this.game.currentStrategy.walls || []) {
-                if (typeof wall.collides === 'function' && wall.collides({position: [px, py], size: [cellSizeX, cellSizeY]} as MovingObject)) {
+                if (typeof wall.collides === 'function' && wall.collides({
+                  position: [px, py],
+                  size: [cellSizeX, cellSizeY]
+                } as MovingObject)) {
                   blockedByWall = true;
                 }
               }
@@ -289,4 +290,3 @@ export class Bot extends Player {
     return false;
   }
 }
-

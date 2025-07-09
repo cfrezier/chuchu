@@ -14,6 +14,7 @@ export class Game {
   currentStrategy: GameStrategy;
   phases = 1;
   bots: Bot[] = [];
+  private lastBotActionTime: number = 0;
 
   constructor(queue: Queue) {
     this.queue = queue;
@@ -118,10 +119,17 @@ export class Game {
   execute(changeScoreListener: () => void) {
     let sendUpdate = false;
 
-    // Les bots jouent automatiquement à chaque tick
-    this.bots.forEach(bot => {
-      bot.play();
-    });
+    // Limite globale d'action des bots
+    const now = Date.now();
+    const botCooldown = CONFIG.BOT_LIMIT_ACTIONS_MS || 500;
+    let canBotsAct = false;
+    if (now - this.lastBotActionTime >= botCooldown) {
+      this.lastBotActionTime = now;
+
+      this.bots.forEach(bot => {
+        bot.play();
+      });
+    }
 
     this.currentStrategy.mouses.forEach(mouse => mouse.move(this.currentStrategy.walls, this.players.map(player => player.arrows).flat(), this.currentStrategy.mouseSpeed));
     this.currentStrategy.cats.forEach(cat => cat.move(this.currentStrategy.walls, this.players.map(player => player.arrows).flat(), this.currentStrategy.catSpeed));
