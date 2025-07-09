@@ -18,7 +18,6 @@ export abstract class GameStrategy {
   mouseSpeed: number = 1;
   catSpeed: number = 1;
   elapsedSteps = 0;
-  stepsDuration = CONFIG.STEP_DURATION;
   name: string = '---';
   mouseStarts: Start[] = [];
   catStarts: Start[] = [];
@@ -40,7 +39,7 @@ export abstract class GameStrategy {
    * La vitesse de base de la stratégie (this.mouseSpeed/catSpeed) est ajustée dynamiquement.
    */
   applySpeedCorrection() {
-    if(this.speedAdjusted) {
+    if (this.speedAdjusted) {
       return;
     }
     this.speedAdjusted = true;
@@ -84,7 +83,8 @@ export abstract class GameStrategy {
   }
 
   hasEnded() {
-    return this.elapsedSteps >= this.stepsDuration;
+    // Arrête la stratégie si la durée dépasse STEP_DURATION (en ms)
+    return (Date.now() - (this.startDate ?? 0)) >= CONFIG.STEP_DURATION;
   }
 
   generateMouses() {
