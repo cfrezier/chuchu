@@ -52,7 +52,7 @@ export abstract class GameStrategy {
     // Calcul dynamique de a et b pour la formule linéaire
     // Pour 15 cases : vitesse = 2
     // Pour 45 cases : vitesse = 0.15
-    const x1 = 15, y1 = 4;
+    const x1 = 15, y1 = 2;
     const x2 = 45, y2 = 0.2;
     const a = (y2 - y1) / (x2 - x1); // pente
     const b = y1 - a * x1;           // ordonnée à l'origine
