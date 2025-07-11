@@ -9,13 +9,15 @@
     "build": "npm run build:node && npm run build:player && npm run build:server",
     "build:node": "npx tsc --sourceMap",
     "build:player": "npx webpack -c ./browser/player/webpack.config.js",
-    "build:server": "npx webpack -c ./browser/server/webpack.config.js"
+    "build:server": "npx webpack -c ./browser/server/webpack.config.js",
+    "protobuf": "npx pbjs src/messages.proto --ts src/messages_pb.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "casual": "^1.6.2",
     "formidable": "^2.0.1",
+    "protobufjs": "^7.5.3",
     "qr-code-styling": "^1.6.0-rc.1",
     "qrcode": "^1.5.3",
     "tslib": "^2.6.2",

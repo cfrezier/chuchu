@@ -20,9 +20,9 @@ export class Goal extends NonMovingObject {
 
   override state() {
     return {
-      p: this.position, // position
-      d: this.direction, // direction
-      c: this.player.color // color
+      position: this.position, // position
+      direction: this.direction, // direction
+      color: this.player.color // color
     }
   }
 }

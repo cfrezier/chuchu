@@ -6,6 +6,7 @@ import {MovingObject} from "./game/moving-object";
 import {Cat} from "./game/cat";
 import {Mouse} from "./game/mouse";
 import {CONFIG} from "../browser/common/config";
+import {PlayerState} from "./messages_pb";
 
 export class Player {
   connected = true;
@@ -45,13 +46,13 @@ export class Player {
     this.position = [Math.round(payload.x * CONFIG.GLOBAL_WIDTH), Math.round(payload.y * CONFIG.GLOBAL_HEIGHT)];
   }
 
-  state() {
+  state(): PlayerState {
     return {
-      c: this.color, // color
-      n: this.name, // name
-      p: this.position, // position
-      t: this.totalPoints, // total
-      a: this.arrows.map(a => a.state()) // arrows
+      color: this.color, // color
+      name: this.name, // name
+      position: this.position, // position
+      totalPoints: this.totalPoints, // total
+      arrows: this.arrows.map(a => a.state()) // arrows
     };
   }
 

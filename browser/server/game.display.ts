@@ -66,7 +66,7 @@ export class GameDisplay {
     this.ready = true;
   }
 
-  previousPayload = { state: { players: []}};
+  previousPayload = {state: {players: []}};
 
   display(newPayload: any) {
     const payload = {...this.previousPayload, ...newPayload, state: {...this.previousPayload.state, ...newPayload.state}};
@@ -95,14 +95,14 @@ export class GameDisplay {
 
   private drawMouses(state: any) {
     const img = this.useAlt ? this.mouseImg2 : this.mouseImg;
-    state.strategy.mouses.forEach((mouse: any) => {
+    (state.strategy.mouses ?? []).forEach((mouse: any) => {
       this.drawRotated(img, mouse.position[0], mouse.position[1], this.angleFor(mouse.direction, 'mouse'));
     });
   }
 
   private drawCats(state: any) {
     const img = this.useAlt ? this.catImg : this.catImg2;
-    state.strategy.cats.forEach((cat: any) => {
+    (state.strategy.cats ?? []).forEach((cat: any) => {
       this.drawRotated(img, cat.position[0], cat.position[1], this.angleFor(cat.direction, 'cat'));
     });
   }
@@ -120,7 +120,7 @@ export class GameDisplay {
       this.context.beginPath();
       this.context.arc(player.position[0], player.position[1], 3, 0, 2 * Math.PI, true);
       this.context.fill();
-      if(this.cursorImg[player.color] === undefined) {
+      if (this.cursorImg[player.color] === undefined) {
         console.warn(`Cursor image for color ${player.color} not found.`);
         this.initImagesForColor(player.color);
       }

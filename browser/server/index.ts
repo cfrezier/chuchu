@@ -4,6 +4,7 @@ import {GameDisplay} from "./game.display";
 import {QrCodeDisplay} from "./qrcode.display";
 import {createWs} from '../common/ws';
 import {CONFIG} from "../common/config";
+import {decodeServerMessage, ServerMessage} from '../../src/messages_pb';
 
 const queue = new QueueDisplay();
 const score = new ScoreDisplay();
@@ -27,68 +28,48 @@ fetch('/config.json').then(config => {
       })
 
       ws.addEventListener("message", function (event) {
-        const payload = JSON.parse(event.data.toString());
-
-        function decodeDirection(d: string) {
-          switch (d) {
-            case 'R': return 'right';
-            case 'L': return 'left';
-            case 'U': return 'up';
-            case 'D': return 'down';
-            default: return d;
+        let handlePayload = (payload: ServerMessage) => {
+          switch (payload.type) {
+            case 'GAME_':
+              lastGameState = { ...lastGameState, ...payload.game};
+              game.display({state: lastGameState});
+              break;
+            case 'QU_':
+              queue.update(payload.queue);
+              break;
+            case 'SC_':
+              score.updateHighScore(payload.score);
+              break;
           }
-        }
-        function decodeObj(arr: any[] = [], extra: any = {}) {
-          return arr.map((o: any) => ({
-            position: o.p,
-            direction: decodeDirection(o.d),
-            color: o.c,
-            ...extra
-          }));
-        }
-
-        function decodeState(state: any) {
-          return {
-            ...lastGameState,
-            players: state.p ? ((state.p).map((pl: any) => ({
-              color: pl.c,
-              name: pl.n,
-              position: pl.p,
-              total: pl.t,
-              arrows: decodeObj(pl.a)
-            }))) : lastGameState?.players,
-            strategy: state.s ? {
-              mouses: decodeObj(state.s.m),
-              cats: decodeObj(state.s.c),
-              goals: decodeObj(state.s.g),
-              walls: decodeObj(state.s.w),
-              name: state.s.n
-            } : lastGameState?.strategy,
-            width: state.w || lastGameState?.width,
-            height: state.h || lastGameState?.height,
-            started: state.st || lastGameState?.started,
-            ready: state.r || lastGameState?.ready,
-            cols: state.c || lastGameState?.cols,
-            rows: state.ro || lastGameState?.rows
+        };
+        if (event.data instanceof Blob) {
+          const reader = new FileReader();
+          reader.onload = function() {
+            const arrayBuffer = reader.result as ArrayBuffer;
+            const data = new Uint8Array(arrayBuffer);
+            const payload = decodeServerMessage(data);
+            handlePayload(payload);
           };
-        }
-
-        // Appliquer la décompression si besoin
-        if (payload.state) {
-          payload.state = decodeState(payload.state);
-          lastGameState = payload.state; // Mémoriser le dernier état du jeu
-        }
-
-        switch (payload.type) {
-          case 'GAME_':
-            game.display({state: payload.state});
-            break;
-          case 'QU_':
-            queue.update(payload);
-            break;
-          case 'SC_':
-            score.updateHighScore(payload);
-            break;
+          reader.readAsArrayBuffer(event.data);
+        } else if (event.data instanceof ArrayBuffer) {
+          const data = new Uint8Array(event.data);
+          const payload = decodeServerMessage(data);
+          handlePayload(payload);
+        } else if (event.data instanceof Uint8Array) {
+          const payload = decodeServerMessage(event.data);
+          handlePayload(payload);
+        } else if (event.data.buffer instanceof ArrayBuffer) {
+          const data = new Uint8Array(event.data.buffer);
+          const payload = decodeServerMessage(data);
+          handlePayload(payload);
+        } else {
+          // fallback JSON si besoin (pour compatibilité)
+          try {
+            const payload = JSON.parse(event.data.toString());
+            handlePayload(payload);
+          } catch (e) {
+            console.error('Impossible de décoder le message WebSocket', e);
+          }
         }
       });
 

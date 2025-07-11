@@ -12,8 +12,8 @@ export class Wall extends NonMovingObject {
 
   state() {
     return {
-      p: this.position, // position
-      d: this.direction // direction
+      position: this.position, // position
+      direction: this.direction // direction
     };
   }
 

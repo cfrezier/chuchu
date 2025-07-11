@@ -11,12 +11,12 @@ export class ScoreDisplay {
   updateHighScore(payload: any) {
     this.getHighscoreDiv().innerHTML = "";
 
-    (payload.state?.players ?? []).forEach((player: any) => {
-      this.addScore(player, this.getHighscoreDiv(), 'total');
+    (payload.players ?? []).forEach((player: any) => {
+      this.addScore(player, this.getHighscoreDiv(), 'totalPoints');
     });
   }
 
-  private addScore(player: any, to: HTMLDivElement, type: 'total' | 'points') {
+  private addScore(player: any, to: HTMLDivElement, type: 'totalPoints' | 'points') {
     const node = document.createElement('div');
     node.classList.add('score-item');
     const playerName = document.createElement('p');

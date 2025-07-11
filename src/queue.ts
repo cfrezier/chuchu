@@ -5,6 +5,7 @@ import {WebSocket} from "ws";
 import * as fs from "fs";
 import {CONFIG} from "../browser/common/config";
 import {Bot} from "./bot";
+import { encodeServerMessage, ServerMessage } from './messages_pb';
 
 export class Queue {
   players = [] as Player[];
@@ -149,32 +150,51 @@ export class Queue {
     this.previousGameState = currentState;
 
     if (Object.keys(diff).length > 0) {
-      const state = JSON.stringify({type: 'GAME_', state: diff});
-      this.servers.forEach((ws) => ws?.send(state));
+      const msg: ServerMessage = {
+        type: 'GAME_',
+        game: diff
+      };
+      const buffer = encodeServerMessage(msg);
+      this.servers.forEach((ws) => ws?.send(buffer));
     }
   }
 
   public sendGameTo(ws: WebSocket) {
-    ws.send(JSON.stringify({type: 'GAME_', state: this.currentGame?.state()}));
+    if (!this.currentGame) return;
+    const gameState = this.currentGame.state();
+    const msg: ServerMessage = {
+      type: 'GAME_',
+      game: gameState
+    };
+    const buffer = encodeServerMessage(msg);
+    ws.send(buffer);
   }
 
   public sendQueueUpdate() {
-    const state = JSON.stringify({
+    if (!this.currentGame) return;
+    const gameState = this.currentGame.state();
+    const msg: ServerMessage = {
       type: 'QU_',
-      state: {...this.currentGame?.state()}
-    });
-    this.servers.forEach((ws) => ws?.send(state));
+      queue: { state: gameState }
+    };
+    const buffer = encodeServerMessage(msg);
+    this.servers.forEach((ws) => ws?.send(buffer));
   }
 
   private sendHighScoreToServer() {
-    const state = JSON.stringify({type: 'SC_', state: this.state()});
-    this.servers.forEach((ws) => ws?.send(state));
+    const scoreState = this.state();
+    const msg: ServerMessage = {
+      type: 'SC_',
+      score: { players: scoreState.players }
+    };
+    const buffer = encodeServerMessage(msg);
+    this.servers.forEach((ws) => ws?.send(buffer));
   }
 
   private state() {
     const list = [...this.players.map(player => player.state())];
-    list.sort((p1, p2) => p2.t - p1.t);
-    return {p: list.slice(0, 10)};
+    list.sort((p1, p2) => p2.totalPoints! - p1.totalPoints!);
+    return {players: list.slice(0, 10)};
   }
 
   private asyncSave() {

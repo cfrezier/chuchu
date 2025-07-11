@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package chuchu;
+
+// Message pour l'état d'une flèche (arrow)
+message ArrowState {
+  repeated int32 position = 1; // [x, y]
+  string direction = 2; // direction encodée
+  string color = 3;
+}
+
+// Message pour l'état d'un joueur
+message PlayerState {
+  string color = 1;
+  string name = 2;
+  repeated int32 position = 3; // [x, y]
+  int32 totalPoints = 4;
+  repeated ArrowState arrows = 5;
+}
+
+// Message pour l'état d'une souris
+message MovingObjectState {
+  repeated int32 position = 1;
+  string direction = 2; // direction
+  string color = 3; // couleur
+}
+
+// Message pour l'état de la stratégie
+message StrategyState {
+  repeated MovingObjectState mouses = 1;
+  repeated MovingObjectState cats = 2;
+  repeated MovingObjectState walls = 3;
+  repeated MovingObjectState goals = 4;
+  string name = 5;
+}
+
+// Message pour l'état du jeu
+message GameState {
+  repeated PlayerState players = 1;
+  StrategyState strategy = 2;
+  int32 width = 3;
+  int32 height = 4;
+  bool started = 5;
+  bool ready = 6;
+  int32 cols = 7;
+  int32 rows = 8;
+}
+
+// Message pour le score (top 10)
+message ScoreState {
+  repeated PlayerState players = 1;
+}
+
+// Message pour la file d'attente (reprend GameState)
+message QueueState {
+  GameState state = 1;
+}
+
+// Message enveloppe pour WebSocket
+message ServerMessage {
+  oneof payload {
+    GameState game = 1;
+    ScoreState score = 2;
+    QueueState queue = 3;
+  }
+  string type = 10; // "GAME_", "SC_", "QU_" ...
+}

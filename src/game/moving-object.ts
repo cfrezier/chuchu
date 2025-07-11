@@ -73,8 +73,8 @@ export class MovingObject {
 
   state() {
     return {
-      p: this.position, // position
-      d: MovingObject.encodeDirection(this.direction) // direction encodée
+      position: this.position, // position
+      direction: MovingObject.encodeDirection(this.direction) // direction encodée
     };
   }
 }

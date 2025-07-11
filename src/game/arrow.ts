@@ -14,9 +14,9 @@ export class Arrow extends NonMovingObject {
 
   override state() {
     return {
-      p: this.position, // position
-      d: MovingObject.encodeDirection(this.direction), // direction encodée
-      c: this.player.color // color
+      position: this.position, // position
+      direction: MovingObject.encodeDirection(this.direction), // direction encodée
+      color: this.player.color // color
     }
   }
 }

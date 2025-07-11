@@ -5,6 +5,7 @@ import {GameStrategy} from "./generators/strategy/game-strategy";
 import {StartingStrategy} from "./generators/strategy/impl/starting-strategy";
 import {StrategyFactory} from "./generators/strategy/strategy-factory";
 import {Bot} from './bot';
+import {GameState} from "./messages_pb";
 
 export class Game {
   players: Player[] = [];
@@ -83,17 +84,17 @@ export class Game {
     }
   }
 
-  state() {
+  state(): GameState {
     return {
-      p: this.players.map(player => player.state()).sort((p1, p2) => p1.t - p2.t), // players
-      s: this.currentStrategy.state(), // strategy
-      w: CONFIG.GLOBAL_WIDTH, // width
-      h: CONFIG.GLOBAL_HEIGHT, // height
-      st: this.started, // started
-      r: this.ready, // ready
-      c: CONFIG.COLUMNS, // cols
-      ro: CONFIG.ROWS // rows
-    }
+      players: this.players.map(player => player.state()).sort((p1, p2) => p1.totalPoints! - p2.totalPoints!),
+      strategy: this.currentStrategy.state(),
+      width: CONFIG.GLOBAL_WIDTH,
+      height: CONFIG.GLOBAL_HEIGHT,
+      started: this.started,
+      ready: this.ready,
+      cols: CONFIG.COLUMNS,
+      rows: CONFIG.ROWS
+    };
   }
 
   size() {
