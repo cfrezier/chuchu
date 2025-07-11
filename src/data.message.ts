@@ -1,3 +1,5 @@
+import {Direction} from "./direction";
+
 export type DataMsg = {
   type: 'joined',
   name: string,
@@ -18,6 +20,6 @@ export type DataMsg = {
   key: string
 }| {
   type: 'arrow',
-  direction: 'up' | 'down' | 'left' | 'right',
+  direction: Direction,
   key: string
 };

@@ -61,20 +61,10 @@ export class MovingObject {
     return Geometry.segmentNorm([this.position, obj.position]) < this.norm + tolerance;
   }
 
-  static encodeDirection(direction: Direction): string {
-    switch (direction) {
-      case 'right': return 'R';
-      case 'left': return 'L';
-      case 'up': return 'U';
-      case 'down': return 'D';
-      default: return direction;
-    }
-  }
-
   state() {
     return {
       position: this.position, // position
-      direction: MovingObject.encodeDirection(this.direction) // direction encodée
+      direction: this.direction // direction
     };
   }
 }

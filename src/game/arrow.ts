@@ -1,7 +1,6 @@
 import {NonMovingObject} from "./non-moving-object";
 import {Player} from "../player";
 import {Direction} from "../direction";
-import {MovingObject} from "./moving-object";
 
 export class Arrow extends NonMovingObject {
   private player: Player;
@@ -15,7 +14,7 @@ export class Arrow extends NonMovingObject {
   override state() {
     return {
       position: this.position, // position
-      direction: MovingObject.encodeDirection(this.direction), // direction encodée
+      direction: this.direction, // direction
       color: this.player.color // color
     }
   }

@@ -89,7 +89,7 @@ function _decodeArrowState(bb: ByteBuffer): ArrowState {
 }
 
 export interface PlayerState {
-  color?: string;
+  colorIndex?: number;
   name?: string;
   position?: number[];
   totalPoints?: number;
@@ -103,11 +103,11 @@ export function encodePlayerState(message: PlayerState): Uint8Array {
 }
 
 function _encodePlayerState(message: PlayerState, bb: ByteBuffer): void {
-  // optional string color = 1;
-  let $color = message.color;
-  if ($color !== undefined) {
-    writeVarint32(bb, 10);
-    writeString(bb, $color);
+  // optional int32 colorIndex = 1;
+  let $colorIndex = message.colorIndex;
+  if ($colorIndex !== undefined) {
+    writeVarint32(bb, 8);
+    writeVarint64(bb, intToLong($colorIndex));
   }
 
   // optional string name = 2;
@@ -165,9 +165,9 @@ function _decodePlayerState(bb: ByteBuffer): PlayerState {
       case 0:
         break end_of_message;
 
-      // optional string color = 1;
+      // optional int32 colorIndex = 1;
       case 1: {
-        message.color = readString(bb, readVarint32(bb));
+        message.colorIndex = readVarint32(bb);
         break;
       }
 

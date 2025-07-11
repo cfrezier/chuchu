@@ -48,19 +48,19 @@ export class InputComponent {
         activity();
       }, false);
       this.up.addEventListener("click", () => {
-        ws.send(JSON.stringify({type: 'arrow', direction: 'up', key}));
+        ws.send(JSON.stringify({type: 'arrow', direction: 'U', key}));
         activity();
       }, false);
       this.down.addEventListener("click", () => {
-        ws.send(JSON.stringify({type: 'arrow', direction: 'down', key}));
+        ws.send(JSON.stringify({type: 'arrow', direction: 'D', key}));
         activity();
       }, false);
       this.left.addEventListener("click", () => {
-        ws.send(JSON.stringify({type: 'arrow', direction: 'left', key}));
+        ws.send(JSON.stringify({type: 'arrow', direction: 'L', key}));
         activity();
       }, false);
       this.right.addEventListener("click", () => {
-        ws.send(JSON.stringify({type: 'arrow', direction: 'right', key}));
+        ws.send(JSON.stringify({type: 'arrow', direction: 'R', key}));
         activity();
       }, false);
       this.quit.addEventListener("click", () => {

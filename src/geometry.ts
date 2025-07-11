@@ -6,24 +6,24 @@ export class Geometry {
 
     // align on grid on position with no speed
     switch (direction) {
-      case 'up':
-      case 'down':
+      case 'U':
+      case 'D':
         position[0] = Math.round(position[0] / CONFIG.GLOBAL_WIDTH * CONFIG.COLUMNS) * CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS;
         break;
-      case 'left':
-      case 'right':
+      case 'L':
+      case 'R':
         position[1] = Math.round(position[1] / CONFIG.GLOBAL_HEIGHT * CONFIG.ROWS) * CONFIG.GLOBAL_HEIGHT / CONFIG.ROWS;
         break;
     }
 
     switch (direction) {
-      case 'up':
+      case 'U':
         return [position[0], position[1] - speed];
-      case 'down':
+      case 'D':
         return [position[0], position[1] + speed];
-      case 'left':
+      case 'L':
         return [position[0] - speed, position[1]];
-      case 'right':
+      case 'R':
         return [position[0] + speed, position[1]];
       default:
         return [position[0], position[1] - speed];
@@ -46,8 +46,7 @@ export class Geometry {
   }
 
   static randomDirection(): Direction {
-    const directions = ['up', 'down', 'left', 'right'];
+    const directions = ['U', 'D', 'L', 'R'];
     return directions[Math.floor(Math.random() * 1000 % 4)] as Direction;
   }
 }
-

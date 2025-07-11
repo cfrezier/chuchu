@@ -12,7 +12,7 @@ import {MovingObject} from "./game/moving-object";
 
 export class Bot extends Player {
   private game: Game;
-  private pendingArrowDirection: 'up' | 'down' | 'left' | 'right' | null = null;
+  private pendingArrowDirection: Direction | null = null;
 
   constructor(game: Game, name: string = 'Bot') {
     super(name, name);
@@ -25,11 +25,11 @@ export class Bot extends Player {
     const cats: Cat[] = this.game.currentStrategy.cats;
     const myGoal: Goal | undefined = this.game.currentStrategy.goals.find(g => g.player.key === this.key);
     if (!myGoal) return;
-    let best = this.findBestArrowPlacement(myGoal, mice, cats);
+    let best: { x: number; y: number; direction: Direction } | null = this.findBestArrowPlacement(myGoal, mice, cats);
     if (!best) {
       // Si aucune case n'améliore l'espérance, essayer d'envoyer un chat vers un goal adverse
       let bestCatScore = -Infinity;
-      let bestCatArrow: { x: number, y: number, direction: 'up' | 'down' | 'left' | 'right' } | null = null;
+      let bestCatArrow: { x: number, y: number, direction: Direction } | null = null;
       // On cible les chats proches de notre goal
       for (const cat of cats) {
         // Pour chaque goal adverse
@@ -38,11 +38,11 @@ export class Bot extends Player {
           // Calculer la direction vers le goal adverse
           const dx = goal.position[0] - cat.position[0];
           const dy = goal.position[1] - cat.position[1];
-          let dir: 'up' | 'down' | 'left' | 'right';
+          let dir: Direction;
           if (Math.abs(dx) > Math.abs(dy)) {
-            dir = dx > 0 ? 'right' : 'left';
+            dir = dx > 0 ? 'R' : 'L';
           } else {
-            dir = dy > 0 ? 'down' : 'up';
+            dir = dy > 0 ? 'D' : 'U';
           }
           // Placer une flèche sur la case devant le chat
           const gridSize = 15;
@@ -50,10 +50,10 @@ export class Bot extends Player {
           const cellSizeY = CONFIG.GLOBAL_HEIGHT / gridSize;
           let col = Math.round(cat.position[0] / cellSizeX);
           let row = Math.round(cat.position[1] / cellSizeY);
-          if (dir === 'left') col--;
-          if (dir === 'right') col++;
-          if (dir === 'up') row--;
-          if (dir === 'down') row++;
+          if (dir === 'L') col--;
+          if (dir === 'R') col++;
+          if (dir === 'U') row--;
+          if (dir === 'D') row++;
           if (col < 0 || col >= gridSize || row < 0 || row >= gridSize) continue;
           const x = (col + 0.5) * cellSizeX;
           const y = (row + 0.5) * cellSizeY;
@@ -110,7 +110,7 @@ export class Bot extends Player {
   private findBestArrowPlacement(goal: Goal, mice: Mouse[], cats: Cat[]): {
     x: number,
     y: number,
-    direction: 'up' | 'down' | 'left' | 'right'
+    direction: Direction
   } | null {
     // On ne regarde que les cases autour du goal à un rayon de 1 à 5 cases
     const gridSize = 15;
@@ -118,9 +118,9 @@ export class Bot extends Player {
     const cellSizeY = CONFIG.GLOBAL_HEIGHT / gridSize;
     let best = null;
     let bestScore = -Infinity;
-    let bestDir: 'up' | 'down' | 'left' | 'right' = 'up';
+    let bestDir: Direction = 'U';
     for (let radius = 1; radius <= 7; radius++) {
-      for (const dir of DirectionUtils.list() as ('up' | 'down' | 'left' | 'right')[]) {
+      for (const dir of DirectionUtils.list() as (Direction)[]) {
         const [dx, dy] = DirectionUtils.vector(dir);
         // Calcul de la position cible en indices de grille
         const col = Math.round((goal.position[0] + dx * radius * cellSizeX) / cellSizeX);
@@ -155,7 +155,7 @@ export class Bot extends Player {
         let miceOnCell = 0;
         let miceNotToGoal = 0;
         let catsToGoal = 0;
-        let dirCount: Record<'up' | 'down' | 'left' | 'right', number> = {up: 0, down: 0, left: 0, right: 0};
+        let dirCount: Record<Direction, number> = {U: 0, D: 0, L: 0, R: 0};
         // Liste des souris déjà dans le goal (à ne pas compter dans les calculs de placement)
         const miceAlreadyInGoal = mice.filter(mouse => typeof goal.collides === 'function' && goal.collides(mouse));
         for (const mouse of mice) {
@@ -255,10 +255,10 @@ export class Bot extends Player {
         const expectedScore = (miceExpected + penalty) / Math.pow(2, catsExpected);
         if (expectedScore > bestScore) {
           bestScore = expectedScore;
-          best = {x: x / CONFIG.GLOBAL_WIDTH, y: y / CONFIG.GLOBAL_HEIGHT, direction: 'up' as Direction};
+          best = {x: x / CONFIG.GLOBAL_WIDTH, y: y / CONFIG.GLOBAL_HEIGHT, direction: 'U' as Direction};
           // On choisit la direction qui rapproche le plus du goal
           let minDist = Infinity;
-          for (const d of DirectionUtils.list() as ('up' | 'down' | 'left' | 'right')[]) {
+          for (const d of DirectionUtils.list() as Direction[]) {
             const [ddx, ddy] = DirectionUtils.vector(d);
             const nx = x + ddx * cellSizeX;
             const ny = y + ddy * cellSizeY;

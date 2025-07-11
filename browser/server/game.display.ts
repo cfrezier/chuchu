@@ -120,14 +120,14 @@ export class GameDisplay {
       this.context.beginPath();
       this.context.arc(player.position[0], player.position[1], 3, 0, 2 * Math.PI, true);
       this.context.fill();
-      if (this.cursorImg[player.color] === undefined) {
-        console.warn(`Cursor image for color ${player.color} not found.`);
-        this.initImagesForColor(player.color);
+      if (this.cursorImg[colors[player.colorIndex]] === undefined) {
+        console.warn(`Cursor image for color ${colors[player.colorIndex]} not found.`);
+        this.initImagesForColor(colors[player.colorIndex]);
       }
-      this.context.drawImage(this.cursorImg[player.color], player.position[0], player.position[1], this.cellSize[0], this.cellSize[1]);
+      this.context.drawImage(this.cursorImg[colors[player.colorIndex]], player.position[0], player.position[1], this.cellSize[0], this.cellSize[1]);
       //player arrows
       (player.arrows || []).forEach((arrow: any) => {
-        this.drawRotated(this.arrowImg[player.color], arrow.position[0], arrow.position[1], this.angleFor(arrow.direction, 'arrow'));
+        this.drawRotated(this.arrowImg[colors[player.colorIndex]], arrow.position[0], arrow.position[1], this.angleFor(arrow.direction, 'arrow'));
       });
     });
   }
@@ -169,26 +169,26 @@ export class GameDisplay {
   angleFor(direction: Direction, type: 'mouse' | 'cat' | 'arrow'): number {
     if (type === 'mouse') {
       switch (direction) {
-        case 'up':
+        case 'U':
           return Math.PI / 2;
-        case 'down':
+        case 'D':
           return -Math.PI / 2;
-        case 'left':
+        case 'L':
           return 0;
-        case 'right':
+        case 'R':
           return Math.PI;
       }
     } else if (type === 'cat') {
       return this.angleFor(direction, 'mouse') + Math.PI;
     }
     switch (direction) {
-      case 'up':
+      case 'U':
         return 0;
-      case 'down':
+      case 'D':
         return Math.PI;
-      case 'left':
+      case 'L':
         return -Math.PI / 2;
-      case 'right':
+      case 'R':
         return Math.PI / 2;
     }
   }

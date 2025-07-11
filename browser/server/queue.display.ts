@@ -1,3 +1,5 @@
+import {colors} from "../../src/colors";
+
 export default class QueueDisplay {
   _queueDiv?: HTMLDivElement;
   _timeDiv?: HTMLDivElement;
@@ -29,7 +31,7 @@ export default class QueueDisplay {
   private addChild(player: any) {
     const node = document.createElement('p');
     node.innerText = player.name
-    node.style.backgroundColor = player.color;
+    node.style.backgroundColor = colors[player.colorIndex];
     this.getQueueDiv()?.appendChild(node);
   }
 

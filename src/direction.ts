@@ -1,35 +1,33 @@
-export type Direction = 'up' | 'down' | 'left' | 'right';
+export type Direction = 'U' | 'D' | 'L' | 'R';
 
 export class DirectionUtils {
   static list(): Direction[] {
-    return ['up', 'down', 'left', 'right'];
+    return ['U', 'D', 'L', 'R'];
   }
 
   static next(direction: Direction): Direction {
     switch (direction) {
-      case 'up':
-        return 'right';
-      case 'right':
-        return 'down';
-      case 'down':
-        return 'left';
-      case 'left':
-        return 'up';
+      case 'U':
+        return 'R';
+      case 'R':
+        return 'D';
+      case 'D':
+        return 'L';
+      case 'L':
+        return 'U';
     }
   }
 
   static vector(direction: Direction): [number, number] {
     switch (direction) {
-      case 'up':
+      case 'U':
         return [0, -1];
-      case 'down':
+      case 'D':
         return [0, 1];
-      case 'left':
+      case 'L':
         return [-1, 0];
-      case 'right':
+      case 'R':
         return [1, 0];
-      default:
-        return [0, -1]; // fallback
     }
   }
 }
