@@ -160,8 +160,8 @@ body {
   }
 }
 
-/* Rotation de l'interface en mode portrait */
-@media (orientation: portrait) {
+/* Rotation de l'interface en mode portrait - Uniquement pour les appareils tactiles mobiles */
+@media (orientation: portrait) and (pointer: coarse) {
   .main {
     position: fixed;
     top: -100vw;
