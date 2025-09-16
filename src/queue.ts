@@ -7,6 +7,58 @@ import {CONFIG} from "../browser/common/config";
 import {Bot} from "./bot";
 import { encodeServerMessage, ServerMessage } from './messages_pb';
 
+/**
+ * Gestionnaire de fréquence adaptative pour optimiser les performances
+ * selon le nombre de joueurs et d'entités dans le jeu
+ */
+class AdaptiveGameLoop {
+  private currentFrequency: number = CONFIG.GAME_LOOP_MS;
+
+  /**
+   * Calcule la fréquence optimale basée sur la charge du jeu
+   */
+  calculateOptimalFrequency(playerCount: number, entityCount: number): number {
+    if (!CONFIG.ADAPTIVE_FREQUENCY) {
+      return CONFIG.GAME_LOOP_MS;
+    }
+
+    // Formule adaptative : plus de joueurs/entités = fréquence plus lente
+    const baseFrequency = CONFIG.GAME_LOOP_MIN_MS;
+
+    // Facteur basé sur le nombre de joueurs (moins critique)
+    const playerFactor = Math.floor(playerCount / 8) * 5;
+
+    // Facteur basé sur le nombre d'entités (plus critique)
+    const entityFactor = Math.floor(entityCount / 50) * 3;
+
+    // Calcul de la fréquence avec contraintes min/max
+    const calculatedFrequency = baseFrequency + playerFactor + entityFactor;
+
+    this.currentFrequency = Math.max(
+      CONFIG.GAME_LOOP_MIN_MS,
+      Math.min(CONFIG.GAME_LOOP_MAX_MS, calculatedFrequency)
+    );
+
+    return this.currentFrequency;
+  }
+
+  /**
+   * Retourne la fréquence actuelle
+   */
+  getCurrentFrequency(): number {
+    return this.currentFrequency;
+  }
+
+  /**
+   * Log des informations de performance (pour debug)
+   */
+  logPerformanceInfo(playerCount: number, entityCount: number): void {
+    if (CONFIG.ADAPTIVE_FREQUENCY) {
+      console.log(`[AdaptiveLoop] Players: ${playerCount}, Entities: ${entityCount}, Frequency: ${this.currentFrequency}ms (${Math.round(1000/this.currentFrequency)} FPS)`);
+    }
+  }
+}
+
 export class Queue {
   players = [] as Player[];
   currentGame: Game;
@@ -14,9 +66,11 @@ export class Queue {
   path: string;
   lastSave: string = '[]';
   savePlanned = false;
+  private adaptiveLoop: AdaptiveGameLoop;
 
   constructor(path: string) {
     this.path = path;
+    this.adaptiveLoop = new AdaptiveGameLoop();
     fs.readFile(this.path, 'utf8', (err, data) => {
       if (err) {
         console.error('Cannont initialize', err);
@@ -117,7 +171,19 @@ export class Queue {
     });
     this.sendGameToServer();
     if (this.currentGame!.started) {
-      setTimeout(() => this.executeGame(), CONFIG.GAME_LOOP_MS);
+      // Calcul de la fréquence adaptative
+      const playerCount = this.currentGame.players.filter(p => p.connected).length;
+      const strategy = this.currentGame.currentStrategy;
+      const entityCount = (strategy?.mouses?.length || 0) + (strategy?.cats?.length || 0);
+
+      const optimalFrequency = this.adaptiveLoop.calculateOptimalFrequency(playerCount, entityCount);
+
+      // Log pour debug (seulement si la fréquence change)
+      if (optimalFrequency !== this.adaptiveLoop.getCurrentFrequency()) {
+        this.adaptiveLoop.logPerformanceInfo(playerCount, entityCount);
+      }
+
+      setTimeout(() => this.executeGame(), optimalFrequency);
     } else {
       this.currentGame.clear();
       this.sendGameToServer();

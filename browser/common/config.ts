@@ -1,6 +1,9 @@
 export const CONFIG = {
   PATH: '/tmp/chuchu-save.json',
   GAME_LOOP_MS: 20,
+  GAME_LOOP_MIN_MS: 20,    // Fréquence maximale (50 FPS)
+  GAME_LOOP_MAX_MS: 50,    // Fréquence minimale (20 FPS)
+  ADAPTIVE_FREQUENCY: true, // Active/désactive la fréquence adaptative
   GLOBAL_HEIGHT: 2000,
   GLOBAL_WIDTH: 2000,
   MAX_PLAYERS: 32,
