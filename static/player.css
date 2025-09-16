@@ -11,15 +11,72 @@
 }
 
 .btn-arrow {
-  padding: 5px;
-  font-size: 40px;
-  width: 50px;
-  height: 50px;
+  padding: 0;
+  width: 65px;
+  height: 65px;
   display: flex;
   align-items: center;
   justify-content: center;
   touch-action: manipulation; /* Optimise les interactions tactiles */
   user-select: none; /* Évite la sélection de texte */
+  position: relative;
+  cursor: pointer;
+
+  /* Effet 3D léger */
+  background: linear-gradient(145deg, #00b8ff, #007bb8);
+  box-shadow: 0 4px 8px rgba(0, 158, 223, 0.3);
+  border-radius: 50px;
+
+  /* Animation simple */
+  transition: all 0.2s ease;
+}
+
+/* Triangles CSS parfaitement centrés */
+.btn-arrow::before {
+  content: '';
+  width: 0;
+  height: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Triangle HAUT */
+.btn-arrow-up::before {
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 15px solid white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Triangle BAS */
+.btn-arrow-down::before {
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 15px solid white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Triangle GAUCHE */
+.btn-arrow-left::before {
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-right: 15px solid white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Triangle DROITE */
+.btn-arrow-right::before {
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-left: 15px solid white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.btn-arrow:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 4px rgba(0, 158, 223, 0.4);
 }
 
 html, body {
