@@ -1,5 +1,7 @@
+import { AnalogStickComponent } from './analog-stick.component';
+
 export class InputComponent {
-  trackpad: HTMLDivElement | undefined;
+  analogStick: AnalogStickComponent;
   panel: HTMLDivElement | undefined;
   label: HTMLDivElement | undefined;
   up: HTMLButtonElement | undefined;
@@ -8,7 +10,11 @@ export class InputComponent {
   right: HTMLButtonElement | undefined;
   quit: HTMLButtonElement | undefined;
   lastArrowTime: number = 0;
-  trackpadActive: boolean = false;
+  stickActive: boolean = false;
+
+  constructor() {
+    this.analogStick = new AnalogStickComponent();
+  }
 
   detectArrowFromSecondTouch(touch: Touch, ws: WebSocket, key: string, activity: () => void) {
     const x = touch.clientX;
@@ -51,7 +57,6 @@ export class InputComponent {
     this.panel = document.getElementById('panel-input') as HTMLDivElement;
     this.label = document.getElementById('player-label') as HTMLDivElement;
 
-    this.trackpad = document.getElementById('trackpad') as HTMLInputElement;
     this.up = document.getElementById('arrow-up') as HTMLButtonElement;
     this.down = document.getElementById('arrow-down') as HTMLButtonElement;
     this.left = document.getElementById('arrow-left') as HTMLButtonElement;
@@ -59,70 +64,24 @@ export class InputComponent {
 
     this.quit = document.getElementById('quit') as HTMLButtonElement;
 
-    if (this.trackpad && this.label && this.panel) {
+    if (this.label && this.panel) {
       this.hide();
-      this.trackpad.addEventListener("click", (event) => {
-        const rect = this.trackpad!.getBoundingClientRect();
-        ws.send(JSON.stringify({type: 'input', key, x: event.offsetX / rect.width, y: event.offsetY / rect.height}));
+
+      // Initialisation du stick analogique
+      this.analogStick.init((x: number, y: number) => {
+        ws.send(JSON.stringify({type: 'input', key, x, y}));
         activity();
-      }, false);
-      this.trackpad.addEventListener("touchmove", (event) => {
-        event.preventDefault(); // Évite les conflits avec d'autres touches
-
-        // Déplacement normal
-        const rect = this.trackpad!.getBoundingClientRect();
-        ws.send(JSON.stringify({
-          type: 'input',
-          key,
-          x: (event.targetTouches[0].pageX - rect.left) / rect.width,
-          y: (event.targetTouches[0].pageY - rect.top) / rect.height
-        }));
-
-        // Détection flèche avec 2ème touche
-        if (event.touches.length >= 2) {
-          this.detectArrowFromSecondTouch(event.touches[1], ws, key, activity);
-        }
-
-        activity();
-      }, {passive: false});
-      this.trackpad.addEventListener("touchstart", (event) => {
-        event.preventDefault(); // Évite les conflits avec d'autres touches
-
-        // Marquer le trackpad comme actif
-        this.trackpadActive = true;
-
-        // Déplacement normal
-        const rect = this.trackpad!.getBoundingClientRect();
-        ws.send(JSON.stringify({
-          type: 'input',
-          key,
-          x: (event.targetTouches[0].pageX - rect.left) / rect.width,
-          y: (event.targetTouches[0].pageY - rect.top) / rect.height
-        }));
-
-        // Détection flèche avec 2ème touche au moment du touchstart
-        if (event.touches.length >= 2) {
-          this.detectArrowFromSecondTouch(event.touches[1], ws, key, activity);
-        }
-
-        activity();
-      }, {passive: false});
-
-      // Détecter quand le trackpad n'est plus utilisé
-      this.trackpad.addEventListener("touchend", (event) => {
-        if (event.touches.length === 0) {
-          this.trackpadActive = false;
-        }
       });
 
-      // Écoute globale pour nouvelles touches pendant utilisation trackpad
+      // Gestion multi-touch pour les flèches (conservé de l'ancien système)
       document.addEventListener("touchstart", (event) => {
-        if (this.trackpadActive && event.touches.length >= 2) {
-          // Trouve la touche qui n'est pas sur le trackpad
+        if (event.touches.length >= 2) {
+          // Trouve la touche qui n'est pas sur le stick
           for (let i = 0; i < event.touches.length; i++) {
             const touch = event.touches[i];
             const element = document.elementFromPoint(touch.clientX, touch.clientY);
-            if (element && !this.trackpad!.contains(element)) {
+            const stickTrack = document.getElementById('analog-stick-track');
+            if (element && stickTrack && !stickTrack.contains(element)) {
               this.detectArrowFromSecondTouch(touch, ws, key, activity);
               break;
             }

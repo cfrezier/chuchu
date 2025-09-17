@@ -16,9 +16,9 @@ Ce projet pousse le concept encore plus loin : jusqu'à 32 joueurs peuvent s'aff
 
 *Exemple d'une partie en cours sur l'affichage principal. Le QRCode en haut à gauche permet aux joueurs de rejoindre la partie facilement depuis leur mobile.*
 
-<img src="pad.png" alt="Pad de contrôle joueur" width="300"/>
+<img src="new-pad.png" alt="Interface gamepad analogique" width="300"/>
 
-*Interface de contrôle (pad) utilisée par les joueurs préférentiellement sur mobile. Le carré à gauche fonctionne comme un trackpad, les flèches permettent de poser une flèche selon l'orientation à l'emplacement du curseur du joueur.*
+*Interface de contrôle gamepad moderne avec stick analogique circulaire pour le mouvement (gauche) et boutons directionnels pour placer les flèches (droite). Optimisée pour mobile avec support multi-touch.*
 
 ---
 
