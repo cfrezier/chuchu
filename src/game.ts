@@ -6,6 +6,7 @@ import {StartingStrategy} from "./generators/strategy/impl/starting-strategy";
 import {StrategyFactory} from "./generators/strategy/strategy-factory";
 import {Bot} from './bot';
 import {GameState} from "./messages_pb";
+import {PerformanceMonitor} from "./performance/performance-monitor";
 
 export class Game {
   players: Player[] = [];
@@ -16,6 +17,7 @@ export class Game {
   phases = 1;
   bots: Bot[] = [];
   private lastBotActionTime: number = 0;
+  private lastPerformanceLog: number = 0;
 
   constructor(queue: Queue) {
     this.queue = queue;
@@ -146,13 +148,15 @@ export class Game {
       }
     });
 
-    this.currentStrategy.mouses.forEach(mouse => {
-      this.currentStrategy.cats.forEach(cat => {
-        if (mouse.collides(cat)) {
-          this.currentStrategy.remove([mouse]);
-        }
-      });
-    });
+    // Optimized collision detection using spatial partitioning
+    const collisionStartTime = PerformanceMonitor.startTiming('collision-detection');
+    const collisions = this.currentStrategy.findCollisions();
+    PerformanceMonitor.endTiming('collision-detection', collisionStartTime);
+
+    if (collisions.length > 0) {
+      const mousesToRemove = collisions.map(([mouse, cat]) => mouse);
+      this.currentStrategy.remove(mousesToRemove);
+    }
 
     // Phase Management
     this.currentStrategy.step();
@@ -167,6 +171,19 @@ export class Game {
 
     if (sendUpdate) {
       changeScoreListener();
+    }
+
+    // Log performance statistics every 30 seconds
+    const currentTime = Date.now();
+    if (currentTime - this.lastPerformanceLog >= 30000) {
+      this.lastPerformanceLog = currentTime;
+      const spatialStats = this.currentStrategy.getSpatialGridStats();
+      console.log(`🗺️ Spatial Grid Stats - Objects: ${spatialStats.totalObjects}, Cells: ${spatialStats.occupiedCells}/${spatialStats.totalCells}, Avg/Cell: ${spatialStats.averageObjectsPerCell.toFixed(1)}`);
+
+      const perfStats = PerformanceMonitor.getStats('collision-detection');
+      if (perfStats) {
+        console.log(`⚡ Collision Detection - Avg: ${perfStats.average.toFixed(3)}ms, Min: ${perfStats.min.toFixed(3)}ms, Max: ${perfStats.max.toFixed(3)}ms`);
+      }
     }
   }
 
