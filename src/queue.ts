@@ -8,6 +8,70 @@ import {Bot} from "./bot";
 import { encodeServerMessage, ServerMessage } from './messages_pb';
 
 /**
+ * Optimiseur de batching WebSocket pour éviter les envois redondants
+ * Regroupe les mises à jour similaires et évite les envois multiples par frame
+ */
+class WebSocketBatcher {
+  private pendingUpdates = new Set<string>();
+  private batchTimer: NodeJS.Timeout | null = null;
+  private readonly BATCH_DELAY = 5; // ms - délai minimal entre envois
+  private queue: Queue;
+
+  constructor(queue: Queue) {
+    this.queue = queue;
+  }
+
+  /**
+   * Programme une mise à jour pour envoi groupé
+   */
+  scheduleUpdate(updateType: 'game' | 'queue' | 'highscore') {
+    this.pendingUpdates.add(updateType);
+
+    if (!this.batchTimer) {
+      this.batchTimer = setTimeout(() => {
+        this.flushUpdates();
+      }, this.BATCH_DELAY);
+    }
+  }
+
+  /**
+   * Envoi immédiat pour les mises à jour critiques
+   */
+  sendImmediate(updateType: 'game' | 'queue' | 'highscore') {
+    this.pendingUpdates.add(updateType);
+    this.flushUpdates();
+  }
+
+  /**
+   * Traite et envoie toutes les mises à jour en attente
+   */
+  private flushUpdates() {
+    if (this.pendingUpdates.has('game')) {
+      this.queue.sendGameToServerInternal();
+    }
+    if (this.pendingUpdates.has('queue')) {
+      this.queue.sendQueueUpdateInternal();
+    }
+    if (this.pendingUpdates.has('highscore')) {
+      this.queue.sendHighScoreToServerInternal();
+    }
+
+    this.pendingUpdates.clear();
+    this.batchTimer = null;
+  }
+
+  /**
+   * Force l'envoi de toutes les mises à jour en attente (pour cleanup)
+   */
+  flush() {
+    if (this.batchTimer) {
+      clearTimeout(this.batchTimer);
+      this.flushUpdates();
+    }
+  }
+}
+
+/**
  * Gestionnaire de fréquence adaptative pour optimiser les performances
  * selon le nombre de joueurs et d'entités dans le jeu
  */
@@ -67,10 +131,12 @@ export class Queue {
   lastSave: string = '[]';
   savePlanned = false;
   private adaptiveLoop: AdaptiveGameLoop;
+  private batcher: WebSocketBatcher;
 
   constructor(path: string) {
     this.path = path;
     this.adaptiveLoop = new AdaptiveGameLoop();
+    this.batcher = new WebSocketBatcher(this);
     fs.readFile(this.path, 'utf8', (err, data) => {
       if (err) {
         console.error('Cannont initialize', err);
@@ -154,9 +220,10 @@ export class Queue {
         break;
       case 'server':
         this.servers.push(ws);
-        this.sendQueueUpdate();
+        // Send immediate state to newly connected server
         this.sendGameTo(ws!);
-        this.sendHighScoreToServer();
+        this.batcher.sendImmediate('queue');
+        this.batcher.sendImmediate('highscore');
         break;
     }
   }
@@ -193,11 +260,17 @@ export class Queue {
   disconnect(ws: InstanceType<typeof WebSocket.WebSocket>) {
     this.players.find(player => player.ws === ws)?.disconnect();
     this.servers = this.servers.filter(server => server !== ws);
+    // Flush pending updates before disconnect
+    this.batcher.flush();
   }
 
   private previousGameState: any = null;
 
   public sendGameToServer() {
+    this.batcher.scheduleUpdate('game');
+  }
+
+  public sendGameToServerInternal() {
     const currentState = this.currentGame?.state();
     let diff: any = {};
 
@@ -237,6 +310,10 @@ export class Queue {
   }
 
   public sendQueueUpdate() {
+    this.batcher.scheduleUpdate('queue');
+  }
+
+  public sendQueueUpdateInternal() {
     if (!this.currentGame) return;
     const gameState = this.currentGame.state();
     const msg: ServerMessage = {
@@ -247,7 +324,11 @@ export class Queue {
     this.servers.forEach((ws) => ws?.send(buffer));
   }
 
-  private sendHighScoreToServer() {
+  public sendHighScoreToServer() {
+    this.batcher.scheduleUpdate('highscore');
+  }
+
+  public sendHighScoreToServerInternal() {
     const scoreState = this.state();
     const msg: ServerMessage = {
       type: 'SC_',
