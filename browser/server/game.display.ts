@@ -21,6 +21,13 @@ export class GameDisplay {
   cellSize: [number, number] = [0, 0];
   useAlt: boolean = false;
 
+  // Performance optimizations
+  private gridCanvas!: HTMLCanvasElement;
+  private gridContext!: CanvasRenderingContext2D;
+  private gridCached: boolean = false;
+  private lastUseAltUpdate: number = 0;
+  private currentGridSize: [number, number] = [0, 0];
+
   constructor() {
     this.mouseImg = new Image();
     this.mouseImg.src = "/img/mouse.svg";
@@ -47,9 +54,17 @@ export class GameDisplay {
   }
 
   resize(cols: number, rows: number) {
+    const oldRows = CONFIG.ROWS;
+    const oldCols = CONFIG.COLUMNS;
+
     CONFIG.ROWS = rows ?? CONFIG.ROWS;
     CONFIG.COLUMNS = cols ?? CONFIG.COLUMNS;
     this.cellSize = [CONFIG.GLOBAL_WIDTH / CONFIG.ROWS, CONFIG.GLOBAL_HEIGHT / CONFIG.COLUMNS];
+
+    // Invalidate grid cache if size changed
+    if (oldRows !== CONFIG.ROWS || oldCols !== CONFIG.COLUMNS) {
+      this.gridCached = false;
+    }
   }
 
   init() {
@@ -63,6 +78,10 @@ export class GameDisplay {
     this.canvas.style.height = `${this.size}px`;
     this.debug = window.document.body.querySelector(".debug-game-state")!;
     this.cellSize = [CONFIG.GLOBAL_WIDTH / CONFIG.ROWS, CONFIG.GLOBAL_HEIGHT / CONFIG.COLUMNS];
+
+    // Initialize grid cache canvas
+    this.initGridCache();
+
     this.ready = true;
   }
 
@@ -78,9 +97,12 @@ export class GameDisplay {
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
       }
 
-      this.useAlt = Math.floor(Date.now() / 500) % 2 === 1;
+      // Optimize useAlt calculation - only update every 500ms
+      this.updateUseAlt();
 
-      this.drawGrid();
+      // Draw cached grid instead of redrawing it
+      this.drawCachedGrid();
+
       if (!!payload.state && !!payload.state.strategy) {
         this.drawStrategyName(payload.state);
         this.drawWalls(payload.state);
@@ -198,5 +220,64 @@ export class GameDisplay {
     this.context.font = "50px Arial";
     this.context.textAlign = "center";
     this.context.fillText(state.strategy.name, CONFIG.GLOBAL_HEIGHT / 2, 100);
+  }
+
+  // Performance optimization methods
+  private initGridCache() {
+    this.gridCanvas = document.createElement('canvas');
+    this.gridCanvas.width = CONFIG.GLOBAL_WIDTH;
+    this.gridCanvas.height = CONFIG.GLOBAL_HEIGHT;
+    this.gridContext = this.gridCanvas.getContext('2d')!;
+    this.gridCached = false;
+    this.currentGridSize = [CONFIG.ROWS, CONFIG.COLUMNS];
+  }
+
+  private updateUseAlt() {
+    const now = Date.now();
+    const currentPeriod = Math.floor(now / 500);
+    const lastPeriod = Math.floor(this.lastUseAltUpdate / 500);
+
+    if (currentPeriod !== lastPeriod) {
+      this.useAlt = currentPeriod % 2 === 1;
+      this.lastUseAltUpdate = now;
+    }
+  }
+
+  private drawCachedGrid() {
+    // Check if grid needs to be redrawn (size changed)
+    if (!this.gridCached ||
+        this.currentGridSize[0] !== CONFIG.ROWS ||
+        this.currentGridSize[1] !== CONFIG.COLUMNS) {
+      this.redrawGridCache();
+    }
+
+    // Draw the cached grid onto the main canvas
+    this.context.drawImage(this.gridCanvas, 0, 0);
+  }
+
+  private redrawGridCache() {
+    // Clear the grid cache
+    this.gridContext.clearRect(0, 0, this.gridCanvas.width, this.gridCanvas.height);
+
+    // Draw the grid on the cache canvas
+    this.gridContext.lineWidth = 1;
+    this.gridContext.strokeStyle = 'white';
+
+    for (let i = 0; i < CONFIG.COLUMNS + 1; i++) {
+      this.gridContext.beginPath();
+      this.gridContext.moveTo((CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS) * i, 0);
+      this.gridContext.lineTo((CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS) * i, this.gridCanvas.height);
+      this.gridContext.stroke();
+    }
+
+    for (let i = 0; i < CONFIG.ROWS + 1; i++) {
+      this.gridContext.beginPath();
+      this.gridContext.moveTo(0, (CONFIG.GLOBAL_HEIGHT / CONFIG.ROWS) * i);
+      this.gridContext.lineTo(this.gridCanvas.width, (CONFIG.GLOBAL_HEIGHT / CONFIG.ROWS) * i);
+      this.gridContext.stroke();
+    }
+
+    this.gridCached = true;
+    this.currentGridSize = [CONFIG.ROWS, CONFIG.COLUMNS];
   }
 }
