@@ -5,82 +5,15 @@ import {QrCodeDisplay} from "./qrcode.display";
 import {createWs} from '../common/ws';
 import {CONFIG} from "../common/config";
 import {decodeServerMessage, ServerMessage} from '../../src/messages_pb';
-
-/**
- * Optimiseur de rendu avec requestAnimationFrame pour synchroniser
- * le rendu avec le refresh rate de l'écran et éviter les redraw inutiles
- */
-class OptimizedRenderer {
-  private needsRedraw: boolean = false;
-  private isRendering: boolean = false;
-  private lastFrameTime: number = 0;
-  private targetFPS: number = 60;
-  private frameInterval: number = 1000 / this.targetFPS;
-  private gameDisplay: GameDisplay;
-  private pendingGameState: any = null;
-
-  constructor(gameDisplay: GameDisplay) {
-    this.gameDisplay = gameDisplay;
-    this.startRenderLoop();
-  }
-
-  private startRenderLoop() {
-    const renderFrame = (currentTime: number) => {
-      if (currentTime - this.lastFrameTime >= this.frameInterval) {
-        if (this.needsRedraw && !this.isRendering && this.pendingGameState) {
-          this.isRendering = true;
-          this.gameDisplay.display(this.pendingGameState);
-          this.needsRedraw = false;
-          this.isRendering = false;
-          this.lastFrameTime = currentTime;
-        }
-      }
-      requestAnimationFrame(renderFrame);
-    };
-
-    requestAnimationFrame(renderFrame);
-  }
-
-  // Appelé par les WebSocket messages
-  markForRedraw(gameState: any) {
-    this.pendingGameState = gameState;
-    this.needsRedraw = true;
-  }
-
-  // FPS adaptatif selon la charge (nombre d'entités)
-  setTargetFPS(fps: number) {
-    this.targetFPS = Math.max(15, Math.min(60, fps));
-    this.frameInterval = 1000 / this.targetFPS;
-  }
-
-  // Adaptation automatique du FPS selon le contenu
-  adaptFPSBasedOnGameState(gameState: any) {
-    if (!gameState?.state?.strategy) return;
-
-    const entityCount = (gameState.state.strategy.mouses?.length || 0) +
-                       (gameState.state.strategy.cats?.length || 0) +
-                       (gameState.state.players?.length || 0);
-
-    // Plus d'entités = FPS plus bas pour maintenir les performances
-    let adaptedFPS = 60;
-    if (entityCount > 100) {
-      adaptedFPS = 30;
-    } else if (entityCount > 50) {
-      adaptedFPS = 45;
-    }
-
-    this.setTargetFPS(adaptedFPS);
-  }
-}
+import {HybridPredictiveRenderer} from './netcode/hybrid-predictive-renderer';
 
 const queue = new QueueDisplay();
 const score = new ScoreDisplay();
 const game = new GameDisplay();
 const qrcode = new QrCodeDisplay();
-const optimizedRenderer = new OptimizedRenderer(game);
+const predictiveRenderer = new HybridPredictiveRenderer(game);
 
 let ws: WebSocket;
-let lastGameState: any = null;
 
 fetch('/config.json').then(config => {
   config.json().then(json => {
@@ -99,14 +32,9 @@ fetch('/config.json').then(config => {
         let handlePayload = (payload: ServerMessage) => {
           switch (payload.type) {
             case 'GAME_':
-              lastGameState = { ...lastGameState, ...payload.game};
-              const gameState = {state: lastGameState};
-
-              // Adaptation automatique du FPS selon la charge
-              optimizedRenderer.adaptFPSBasedOnGameState(gameState);
-
-              // Demander un redraw avec le nouveau système optimisé
-              optimizedRenderer.markForRedraw(gameState);
+              if (payload.game) {
+                predictiveRenderer.handleServerUpdate(payload.game);
+              }
               break;
             case 'QU_':
               queue.update(payload.queue);

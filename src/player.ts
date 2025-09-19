@@ -53,7 +53,8 @@ export class Player {
       name: this.name,
       position: this.position,
       totalPoints: this.totalPoints,
-      arrows: this.arrows.map(a => a.state())
+      arrows: this.arrows.map(a => a.state()),
+      key: this.key
     };
   }
 

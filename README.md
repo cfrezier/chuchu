@@ -84,6 +84,22 @@ Le serveur envoie en temps réel l'état du jeu à tous les clients connectés, 
 
 ---
 
+## ⚙️ Configuration
+
+Les paramètres critiques du gameplay et des performances sont centralisés dans `static/config.json` (copié côté serveur) et synchronisés dans `browser/common/config.ts` pour le front. Voici les clés à ajuster en fonction de votre infrastructure :
+
+| Paramètre | Description | Impact principal |
+| --- | --- | --- |
+| `GAME_LOOP_MS` / `SERVER_TICK_RATE` | Durée cible entre deux ticks serveur (ms) et taux autoritaire annoncé. | Charge CPU côté serveur, fréquence des mises à jour logiques. |
+| `SERVER_BROADCAST_INTERVAL_MS` | Seuil minimal entre deux diffusions WebSocket de l’état. | Débit réseau et charge des clients. |
+| `BASE_TICK_MS` | Tick de référence utilisé pour normaliser les vitesses des entités. | Vitesse perçue des souris/chats lorsque le tick-rate varie. |
+| `RENDER_INTERPOLATION_DELAY_MS`, `RENDER_MAX_PREDICTION_MS`, `RENDER_BUFFER_MS` | Fenêtres temporelles de l’interpolation/prediction client. | Fluidité visuelle, tolérance à la latence. |
+| `MAX_MOUSES`, `MAX_CATS`, `MAX_PLAYERS` | Limites d’entités simultanées. | Lisibilité du jeu, charge CPU/GPU. |
+
+> **Astuce :** après modification, redémarrez le serveur pour recharger la configuration. Les clients Web n’ont pas besoin d’être recompilés si vous ne changez que `static/config.json`.
+
+---
+
 ## 🧠 Stratégies de jeu et générateurs
 
 Le projet ChuChuV2 est conçu pour être facilement extensible grâce à deux concepts clés :

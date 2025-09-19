@@ -16,6 +16,7 @@ message PlayerState {
   repeated int32 position = 3; // [x, y]
   int32 totalPoints = 4;
   repeated ArrowState arrows = 5;
+  string key = 6;
 }
 
 // Message pour l'état d'une souris
@@ -44,6 +45,10 @@ message GameState {
   bool ready = 6;
   int32 cols = 7;
   int32 rows = 8;
+  double timestamp = 9;
+  uint32 sequence = 10;
+  uint32 tickRate = 11;
+  uint32 deltaMs = 12;
 }
 
 // Message pour le score (top 10)

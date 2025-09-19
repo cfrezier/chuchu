@@ -94,6 +94,7 @@ export interface PlayerState {
   position?: number[];
   totalPoints?: number;
   arrows?: ArrowState[];
+  key?: string;
 }
 
 export function encodePlayerState(message: PlayerState): Uint8Array {
@@ -148,6 +149,13 @@ function _encodePlayerState(message: PlayerState, bb: ByteBuffer): void {
       writeByteBuffer(bb, nested);
       pushByteBuffer(nested);
     }
+  }
+
+  // optional string key = 6;
+  let $key = message.key;
+  if ($key !== undefined) {
+    writeVarint32(bb, 50);
+    writeString(bb, $key);
   }
 }
 
@@ -204,6 +212,12 @@ function _decodePlayerState(bb: ByteBuffer): PlayerState {
         let values = message.arrows || (message.arrows = []);
         values.push(_decodeArrowState(bb));
         bb.limit = limit;
+        break;
+      }
+
+      // optional string key = 6;
+      case 6: {
+        message.key = readString(bb, readVarint32(bb));
         break;
       }
 
@@ -453,6 +467,10 @@ export interface GameState {
   ready?: boolean;
   cols?: number;
   rows?: number;
+  timestamp?: number;
+  sequence?: number;
+  tickRate?: number;
+  deltaMs?: number;
 }
 
 export function encodeGameState(message: GameState): Uint8Array {
@@ -527,6 +545,34 @@ function _encodeGameState(message: GameState, bb: ByteBuffer): void {
     writeVarint32(bb, 64);
     writeVarint64(bb, intToLong($rows));
   }
+
+  // optional double timestamp = 9;
+  let $timestamp = message.timestamp;
+  if ($timestamp !== undefined) {
+    writeVarint32(bb, 73);
+    writeDouble(bb, $timestamp);
+  }
+
+  // optional uint32 sequence = 10;
+  let $sequence = message.sequence;
+  if ($sequence !== undefined) {
+    writeVarint32(bb, 80);
+    writeVarint64(bb, intToLong($sequence));
+  }
+
+  // optional uint32 tickRate = 11;
+  let $tickRate = message.tickRate;
+  if ($tickRate !== undefined) {
+    writeVarint32(bb, 88);
+    writeVarint64(bb, intToLong($tickRate));
+  }
+
+  // optional uint32 deltaMs = 12;
+  let $deltaMs = message.deltaMs;
+  if ($deltaMs !== undefined) {
+    writeVarint32(bb, 96);
+    writeVarint64(bb, intToLong($deltaMs));
+  }
 }
 
 export function decodeGameState(binary: Uint8Array): GameState {
@@ -593,6 +639,30 @@ function _decodeGameState(bb: ByteBuffer): GameState {
       // optional int32 rows = 8;
       case 8: {
         message.rows = readVarint32(bb);
+        break;
+      }
+
+      // optional double timestamp = 9;
+      case 9: {
+        message.timestamp = readDouble(bb);
+        break;
+      }
+
+      // optional uint32 sequence = 10;
+      case 10: {
+        message.sequence = readVarint32(bb);
+        break;
+      }
+
+      // optional uint32 tickRate = 11;
+      case 11: {
+        message.tickRate = readVarint32(bb);
+        break;
+      }
+
+      // optional uint32 deltaMs = 12;
+      case 12: {
+        message.deltaMs = readVarint32(bb);
         break;
       }
 
