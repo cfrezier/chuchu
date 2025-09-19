@@ -144,15 +144,17 @@ export class Game {
     const activeArrows = this.players.map(player => player.arrows).flat();
 
     this.currentStrategy.mouses.forEach(mouse => {
-      const speed = this.currentStrategy.mouseSpeed * speedMultiplier;
+      const speed = this.currentStrategy.mouseSpeed * 2; // TEST: sans speedMultiplier
       mouse.move(this.currentStrategy.walls, activeArrows, speed);
     });
     this.currentStrategy.cats.forEach(cat => {
-      const speed = this.currentStrategy.catSpeed * speedMultiplier;
+      const speed = this.currentStrategy.catSpeed; // TEST: sans speedMultiplier
       cat.move(this.currentStrategy.walls, activeArrows, speed);
     });
     this.currentStrategy.goals.map(goal => {
-      const absorbed = goal.absorbing([...this.currentStrategy.mouses, ...this.currentStrategy.cats]);
+      // Optimisation: utiliser SpatialGrid au lieu de tester toutes les souris
+      const nearbyObjects = this.currentStrategy.spatialGrid.getNearbyObjects(goal);
+      const absorbed = goal.absorbing(nearbyObjects);
       if (absorbed && absorbed.length > 0) {
         absorbed.forEach(absorbedObject => goal.player.absorb(absorbedObject));
         this.currentStrategy.remove(absorbed);
