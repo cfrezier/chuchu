@@ -132,6 +132,11 @@ export class Queue {
   savePlanned = false;
   private adaptiveLoop: AdaptiveGameLoop;
   private batcher: WebSocketBatcher;
+  private lastSentGameState: any = null;
+  private lastBroadcastTime = 0;
+  private broadcastSequence = 0;
+  private lastSnapshot: any = null;
+  private lastTickTime: number = Date.now();
 
   constructor(path: string) {
     this.path = path;
@@ -230,7 +235,14 @@ export class Queue {
 
   executeGame() {
     this.currentGame!.started = this.currentGame.players.length >= CONFIG.MIN_PLAYERS;
-    this.currentGame!.execute(() => {
+    const now = Date.now();
+    const rawDelta = now - this.lastTickTime;
+    const baselineTick = CONFIG.BASE_TICK_MS ?? 20;
+    const fallbackDelta = CONFIG.SERVER_BROADCAST_INTERVAL_MS ?? CONFIG.GAME_LOOP_MS ?? baselineTick;
+    const deltaMs = rawDelta > 0 ? rawDelta : fallbackDelta;
+    this.lastTickTime = now;
+
+    this.currentGame!.execute(deltaMs, () => {
       this.sendHighScoreToServer();
       this.sendGameToServer();
       this.sendQueueUpdate();
@@ -264,20 +276,24 @@ export class Queue {
     this.batcher.flush();
   }
 
-  private previousGameState: any = null;
-
   public sendGameToServer() {
     this.batcher.scheduleUpdate('game');
   }
 
   public sendGameToServerInternal() {
+    const now = Date.now();
+    const targetInterval = Math.max(CONFIG.SERVER_BROADCAST_INTERVAL_MS ?? 50, this.adaptiveLoop.getCurrentFrequency());
+    if (this.lastBroadcastTime && now - this.lastBroadcastTime < targetInterval) {
+      return;
+    }
+
     const currentState = this.currentGame?.state();
     let diff: any = {};
 
-    if (this.previousGameState) {
+    if (this.lastSentGameState) {
       for (const key in currentState) {
         // @ts-ignore
-        if (JSON.stringify(currentState[key]) !== JSON.stringify(this.previousGameState[key])) {
+        if (JSON.stringify(currentState[key]) !== JSON.stringify(this.lastSentGameState[key])) {
           // @ts-ignore
           diff[key] = currentState[key];
         }
@@ -286,7 +302,21 @@ export class Queue {
       diff = currentState;
     }
 
-    this.previousGameState = currentState;
+    const deltaMs = this.lastBroadcastTime ? now - this.lastBroadcastTime : targetInterval;
+    this.broadcastSequence += 1;
+    const tickRate = Math.round(1000 / this.adaptiveLoop.getCurrentFrequency());
+    const metadata = {
+      timestamp: now,
+      sequence: this.broadcastSequence,
+      deltaMs,
+      tickRate
+    };
+
+    diff = { ...diff, ...metadata };
+
+    this.lastSentGameState = currentState;
+    this.lastBroadcastTime = now;
+    this.lastSnapshot = { ...currentState, ...metadata };
 
     if (Object.keys(diff).length > 0) {
       const msg: ServerMessage = {
@@ -300,10 +330,20 @@ export class Queue {
 
   public sendGameTo(ws: WebSocket) {
     if (!this.currentGame) return;
-    const gameState = this.currentGame.state();
+    const now = Date.now();
+    const currentFrequency = this.adaptiveLoop.getCurrentFrequency();
+    const tickRate = Math.round(1000 / currentFrequency);
+    const deltaMs = this.lastBroadcastTime ? now - this.lastBroadcastTime : currentFrequency;
+    const baseState = this.currentGame.state();
+
+    const snapshot = this.lastSnapshot ?? { ...baseState, timestamp: now, sequence: this.broadcastSequence, deltaMs, tickRate };
+    if (!this.lastSnapshot) {
+      this.lastSnapshot = snapshot;
+    }
+
     const msg: ServerMessage = {
       type: 'GAME_',
-      game: gameState
+      game: snapshot
     };
     const buffer = encodeServerMessage(msg);
     ws.send(buffer);

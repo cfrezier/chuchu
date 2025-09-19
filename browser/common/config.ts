@@ -1,9 +1,15 @@
 export const CONFIG = {
   PATH: '/tmp/chuchu-save.json',
-  GAME_LOOP_MS: 20,
-  GAME_LOOP_MIN_MS: 20,    // Fréquence maximale (50 FPS)
-  GAME_LOOP_MAX_MS: 50,    // Fréquence minimale (20 FPS)
+  GAME_LOOP_MS: 50,
+  GAME_LOOP_MIN_MS: 50,    // Fréquence maximale (20 TPS)
+  GAME_LOOP_MAX_MS: 90,    // Fréquence minimale (11 TPS)
   ADAPTIVE_FREQUENCY: true, // Active/désactive la fréquence adaptative
+  SERVER_TICK_RATE: 20,     // Nombre de ticks autoritaires par seconde
+  SERVER_BROADCAST_INTERVAL_MS: 50,
+  RENDER_INTERPOLATION_DELAY_MS: 120,
+  RENDER_MAX_PREDICTION_MS: 120,
+  RENDER_BUFFER_MS: 800,
+  BASE_TICK_MS: 20,         // Référence historique utilisée pour normaliser les vitesses
   GLOBAL_HEIGHT: 2000,
   GLOBAL_WIDTH: 2000,
   MAX_PLAYERS: 32,

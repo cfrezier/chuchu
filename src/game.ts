@@ -120,7 +120,7 @@ export class Game {
     CONFIG.COLUMNS = size;
   }
 
-  execute(changeScoreListener: () => void) {
+  execute(deltaMs: number, changeScoreListener: () => void) {
     let sendUpdate = false;
 
     // Limite globale d'action des bots
@@ -137,8 +137,20 @@ export class Game {
       });
     }
 
-    this.currentStrategy.mouses.forEach(mouse => mouse.move(this.currentStrategy.walls, this.players.map(player => player.arrows).flat(), this.currentStrategy.mouseSpeed));
-    this.currentStrategy.cats.forEach(cat => cat.move(this.currentStrategy.walls, this.players.map(player => player.arrows).flat(), this.currentStrategy.catSpeed));
+    const baselineTickMs = CONFIG.BASE_TICK_MS ?? 20;
+    const effectiveDelta = Math.max(deltaMs, 1);
+    const clampedDelta = Math.min(effectiveDelta, baselineTickMs * 3);
+    const speedMultiplier = clampedDelta / baselineTickMs;
+    const activeArrows = this.players.map(player => player.arrows).flat();
+
+    this.currentStrategy.mouses.forEach(mouse => {
+      const speed = this.currentStrategy.mouseSpeed * speedMultiplier;
+      mouse.move(this.currentStrategy.walls, activeArrows, speed);
+    });
+    this.currentStrategy.cats.forEach(cat => {
+      const speed = this.currentStrategy.catSpeed * speedMultiplier;
+      cat.move(this.currentStrategy.walls, activeArrows, speed);
+    });
     this.currentStrategy.goals.map(goal => {
       const absorbed = goal.absorbing([...this.currentStrategy.mouses, ...this.currentStrategy.cats]);
       if (absorbed && absorbed.length > 0) {
