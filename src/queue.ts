@@ -220,7 +220,19 @@ export class Queue {
       case 'arrow':
         const playerArrow = this.players.find((player) => payload.key === player.key);
         if (!!playerArrow) {
-          playerArrow.arrow(payload, playerArrow.position, [...this.players.map(player => player.arrows).flat(), ...this.currentGame.currentStrategy.goals]);
+          // Inclure uniquement les flèches des autres joueurs (pas du joueur actuel)
+          const otherPlayersArrows = this.players
+            .filter(p => p.key !== playerArrow.key)
+            .map(player => player.arrows)
+            .flat();
+
+          const forbiddenPlaces = [
+            ...otherPlayersArrows,
+            ...this.currentGame.currentStrategy.goals,
+            ...this.currentGame.currentStrategy.walls
+          ];
+
+          playerArrow.arrow(payload, playerArrow.position, forbiddenPlaces);
         }
         break;
       case 'server':

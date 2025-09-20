@@ -121,8 +121,12 @@ export class Player {
       Math.floor((position[0]) / cellWidth) * cellWidth,
       Math.floor((position[1]) / cellHeight) * cellHeight
     ] as [number, number];
-    // Vérification : ne pas placer de flèche sur un wall ou un goal
-    const isOnForbiddenPlace = forbiddenPlaces.some(obj => obj.collides({position} as MovingObject, obj.norm * 2));
+    // Vérification : ne pas placer de flèche sur un wall, un goal ou une flèche d'un autre joueur
+    const isOnForbiddenPlace = forbiddenPlaces.some(obj => {
+      const dx = Math.abs(obj.position[0] - gridAligned[0]);
+      const dy = Math.abs(obj.position[1] - gridAligned[1]);
+      return dx < obj.norm && dy < obj.norm;
+    });
     if (isOnForbiddenPlace) {
       return;
     }
