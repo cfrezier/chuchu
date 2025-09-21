@@ -7,6 +7,7 @@ import {StrategyFactory} from "./generators/strategy/strategy-factory";
 import {Bot} from './bot';
 import {GameState} from "./messages_pb";
 import {PerformanceMonitor} from "./performance/performance-monitor";
+import {Arrow} from "./game/arrow";
 
 export class Game {
   players: Player[] = [];
@@ -18,6 +19,8 @@ export class Game {
   bots: Bot[] = [];
   private lastBotActionTime: number = 0;
   private lastPerformanceLog: number = 0;
+  // Scratch buffer to avoid array allocations in game loop
+  private activeArrowsScratch: Arrow[] = [];
 
   constructor(queue: Queue) {
     this.queue = queue;
@@ -46,6 +49,24 @@ export class Game {
       console.log(`Bot ${i + 1} joined and queued.`);
       this.bots.push(bot);
     }
+  }
+
+  /**
+   * Efficiently collect all active arrows using a reusable scratch buffer
+   * to avoid memory allocations in the game loop hot path.
+   * @returns Array of all arrows from all players
+   */
+  private collectActiveArrows(): Arrow[] {
+    this.activeArrowsScratch.length = 0; // Reset without allocation
+
+    for (let i = 0; i < this.players.length; i++) {
+      const arrows = this.players[i].arrows;
+      for (let j = 0; j < arrows.length; j++) {
+        this.activeArrowsScratch.push(arrows[j]);
+      }
+    }
+
+    return this.activeArrowsScratch;
   }
 
   apply(player: Player) {
@@ -141,7 +162,7 @@ export class Game {
     const effectiveDelta = Math.max(deltaMs, 1);
     const clampedDelta = Math.min(effectiveDelta, baselineTickMs * 3);
     const speedMultiplier = clampedDelta / baselineTickMs;
-    const activeArrows = this.players.map(player => player.arrows).flat();
+    const activeArrows = this.collectActiveArrows();
 
     this.currentStrategy.mouses.forEach(mouse => {
       const speed = this.currentStrategy.mouseSpeed * 2; // TEST: sans speedMultiplier
