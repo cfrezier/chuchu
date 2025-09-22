@@ -12,7 +12,8 @@ export type DataMsg = {
   type: 'quit',
   key: string
 } | {
-  type: 'server'
+  type: 'server',
+  allowLongServerView?: boolean
 } | {
   type: 'input',
   x: number,

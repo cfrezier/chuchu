@@ -24,7 +24,8 @@ fetch('/config.json').then(config => {
       ws = createWs();
 
       ws.addEventListener('open', () => {
-        ws.send(JSON.stringify({type: 'server'}));
+        const allowLongServerView = localStorage.getItem('ALLOW_LONG_SERVER_VIEW') === 'true';
+        ws.send(JSON.stringify({type: 'server', allowLongServerView}));
         qrcode.init();
       })
 
@@ -76,7 +77,10 @@ fetch('/config.json').then(config => {
       });
 
       ws.addEventListener('close', (event) => {
-        setTimeout(() => connect(), 1000);
+        const allowLongServerView = localStorage.getItem('ALLOW_LONG_SERVER_VIEW') === 'true';
+        if (allowLongServerView) {
+          setTimeout(() => connect(), 1000);
+        }
       });
     }
 
