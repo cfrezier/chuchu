@@ -197,6 +197,7 @@ export class HybridPredictiveRenderer {
 
   private matchObjectsByProximity(previousObjects: any[], nextObjects: any[]): Array<{ previous?: any; current: any }> {
     const remainingPrev = previousObjects.map(obj => ({ obj, used: false } as { obj: any; used: boolean }));
+    const maxDistanceSq = this.maxMatchDistanceSquared();
 
     return nextObjects.map(current => {
       let bestMatchIndex = -1;
@@ -213,13 +214,27 @@ export class HybridPredictiveRenderer {
       });
 
       let previous = undefined;
-      if (bestMatchIndex >= 0) {
+      if (bestMatchIndex >= 0 && bestDistance <= maxDistanceSq) {
         previous = remainingPrev[bestMatchIndex].obj;
         remainingPrev[bestMatchIndex].used = true;
       }
 
       return { previous, current };
     });
+  }
+
+  private maxMatchDistanceSquared(): number {
+    const state = this.authoritativeState ?? {};
+    const cols = Math.max(1, Number(state.cols ?? CONFIG.COLUMNS ?? 1));
+    const rows = Math.max(1, Number(state.rows ?? CONFIG.ROWS ?? 1));
+    const width = Number(state.width ?? CONFIG.GLOBAL_WIDTH ?? 1);
+    const height = Number(state.height ?? CONFIG.GLOBAL_HEIGHT ?? 1);
+
+    const cellWidth = width / cols;
+    const cellHeight = height / rows;
+    const maxAxis = Math.max(cellWidth, cellHeight);
+    const threshold = maxAxis * 2; // tolerate up to ~2 cells before treating as a new entity
+    return threshold * threshold;
   }
 
   private distanceSquared(a: number[] | undefined, b: number[] | undefined): number {
