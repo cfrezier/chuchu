@@ -79,7 +79,7 @@ export class GameDisplay {
     this.debug = window.document.body.querySelector(".debug-game-state")!;
     this.cellSize = [CONFIG.GLOBAL_WIDTH / CONFIG.ROWS, CONFIG.GLOBAL_HEIGHT / CONFIG.COLUMNS];
 
-    // Initialize grid cache canvas
+    // Initialize grid cache
     this.initGridCache();
 
     this.ready = true;
@@ -155,7 +155,7 @@ export class GameDisplay {
   }
 
   private drawWalls(state: any) {
-    state.strategy.walls.forEach((wall: any) => {
+    (state.strategy?.walls ?? []).forEach((wall: any) => {
       this.context.drawImage(this.wallImg, wall.position[0], wall.position[1], this.cellSize[0], this.cellSize[1]);
     });
   }
