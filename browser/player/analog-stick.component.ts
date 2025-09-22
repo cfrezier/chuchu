@@ -186,14 +186,9 @@ export class AnalogStickComponent {
 
   private updateKnobPosition(x: number, y: number) {
     if (!this.knob) return;
-
-    // Position relative au centre du track (x et y sont déjà relatifs au centre)
-    // CORRIGER : x et y sont les offsets depuis le centre
     this.knob.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
     // Feedback visuel : couleur selon la force
-    const force = Math.min(1, Math.sqrt(x * x + y * y) / this.maxRadius);
-    const color = `rgba(${Math.floor(255 * force)}, ${Math.floor(100 + 155 * (1-force))}, 100, 0.8)`;
-    this.knob.style.background = color;
+    this.knob.style.background = `rgba(${Math.floor(255 * Math.min(1, Math.sqrt(x * x + y * y) / this.maxRadius))}, ${Math.floor(100 + 155 * (1-Math.min(1, Math.sqrt(x * x + y * y) / this.maxRadius)))}, 100, 0.8)`;
   }
 
   private updateDirectionArrow(normX: number, normY: number) {
@@ -220,12 +215,9 @@ export class AnalogStickComponent {
       const deltaTime = (currentTime - lastTime) / 16.67;
       lastTime = currentTime;
       // Courbe de vitesse plus linéaire
-      const baseSpeed = 0.04;
-      const maxSpeed = 0.07;
-      const magnitude = Math.sqrt(this.moveDirectionX * this.moveDirectionX + this.moveDirectionY * this.moveDirectionY);
-      const speedMultiplier = magnitude; // linéaire
-      const rawSpeed = baseSpeed * speedMultiplier * deltaTime;
-      const speed = Math.min(rawSpeed, maxSpeed * deltaTime);
+      const baseSpeed = 0.025; // Vitesse de base réduite
+      const maxSpeed = 0.045;  // Vitesse maximale réduite
+      const speed = Math.min(baseSpeed * Math.sqrt(this.moveDirectionX * this.moveDirectionX + this.moveDirectionY * this.moveDirectionY) * deltaTime, maxSpeed * deltaTime);
       const deltaX = this.moveDirectionX * speed;
       const deltaY = this.moveDirectionY * speed;
       this.cursorX = Math.max(0, Math.min(1, this.cursorX + deltaX));

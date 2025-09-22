@@ -165,11 +165,11 @@ export class Game {
     const activeArrows = this.collectActiveArrows();
 
     this.currentStrategy.mouses.forEach(mouse => {
-      const speed = this.currentStrategy.mouseSpeed * 2; // TEST: sans speedMultiplier
+      const speed = this.currentStrategy.mouseSpeed;
       mouse.move(this.currentStrategy.walls, activeArrows, speed);
     });
     this.currentStrategy.cats.forEach(cat => {
-      const speed = this.currentStrategy.catSpeed; // TEST: sans speedMultiplier
+      const speed = this.currentStrategy.catSpeed;
       cat.move(this.currentStrategy.walls, activeArrows, speed);
     });
     this.currentStrategy.goals.map(goal => {
