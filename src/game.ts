@@ -70,19 +70,22 @@ export class Game {
   }
 
   apply(player: Player) {
+    // Ajout du joueur sans changer la stratégie immédiatement
     if (!this.players.filter(player => player.connected).find(playerInGame => playerInGame.key === player.key)) {
       if (this.players.length <= CONFIG.MAX_PLAYERS) {
         this.players.push(player);
         player.init(this.players.length - 1);
         player.queued();
-        if (this.players.length > CONFIG.MIN_PLAYERS) {
-          console.log('starting game execution...')
-          this.currentStrategy = StrategyFactory.next(this.currentStrategy, this.players);
-          this.queue.doneWaiting();
-          this.queue.executeGame();
-          this.queue.sendQueueUpdate();
-        }
-        this.size();
+        setTimeout(() => {
+          if (this.currentStrategy instanceof StartingStrategy && this.players.length > CONFIG.MIN_PLAYERS) {
+            console.log('starting game execution...')
+            this.size();
+            this.currentStrategy = StrategyFactory.next(this.currentStrategy, this.players);
+            this.queue.doneWaiting();
+            this.queue.executeGame();
+            this.queue.sendQueueUpdate();
+          }
+        }, 1000);
         this.queue.sendGameToServer();
       } else {
         console.log('Game full');
@@ -94,13 +97,19 @@ export class Game {
   unapply(player: Player) {
     if (this.players.find(playerInGame => playerInGame.key === player.key)) {
       this.players = this.players.filter(playerInGame => playerInGame.key !== player.key);
+      // Retirer tous les objets du joueur de la stratégie courante
+      if (this.currentStrategy) {
+        // Retirer les goals liés au joueur
+        this.currentStrategy.goals = this.currentStrategy.goals.filter(g => g.player.key !== player.key);
+      }
+      // Retirer les flèches
+      player.arrows = [];
       this.currentStrategy.unapply(player);
       player.canQueue();
       if (this.players.length === 0) {
         this.started = false;
         console.log('Game stopped');
       }
-      this.size();
       this.queue.sendGameToServer();
       this.queue.sendQueueUpdate();
     }
@@ -195,12 +204,26 @@ export class Game {
     // Phase Management
     this.currentStrategy.step();
     if (this.currentStrategy.hasEnded()) {
-      this.currentStrategy.reward(this.players);
-      this.currentStrategy = StrategyFactory.next(this.currentStrategy, this.players);
-      this.currentStrategy.applySpeedCorrection();
-      this.players.forEach(player => player.arrows = []);
-      this.phases++;
-      sendUpdate = true;
+      // Vérifier le nombre de joueurs connectés
+      const connectedPlayers = this.players.filter(p => p.connected);
+      if (connectedPlayers.length < CONFIG.MIN_PLAYERS) {
+        // Pas assez de joueurs, revenir à la stratégie d'attente
+        this.size();
+        this.currentStrategy = new StartingStrategy();
+        this.queue.sendQueueUpdate();
+        this.queue.doneWaiting();
+        this.started = false;
+        console.log('Pas assez de joueurs, retour à l’attente.');
+      } else {
+        // Nouvelle stratégie avec tous les joueurs connectés
+        this.currentStrategy.reward(this.players);
+        this.size();
+        this.currentStrategy = StrategyFactory.next(this.currentStrategy, connectedPlayers);
+        this.currentStrategy.applySpeedCorrection();
+        connectedPlayers.forEach(player => player.arrows = []);
+        this.phases++;
+        sendUpdate = true;
+      }
     }
 
     if (sendUpdate) {

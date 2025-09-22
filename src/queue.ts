@@ -5,7 +5,7 @@ import {WebSocket} from "ws";
 import * as fs from "fs";
 import {CONFIG} from "../browser/common/config";
 import {Bot} from "./bot";
-import { encodeServerMessage, ServerMessage } from './messages_pb';
+import {encodeServerMessage, ServerMessage} from './messages_pb';
 
 /**
  * Optimiseur de batching WebSocket pour éviter les envois redondants
@@ -99,8 +99,8 @@ class AdaptiveGameLoop {
     const calculatedFrequency = baseFrequency + playerFactor + entityFactor;
 
     this.currentFrequency = Math.max(
-      CONFIG.GAME_LOOP_MIN_MS,
-      Math.min(CONFIG.GAME_LOOP_MAX_MS, calculatedFrequency)
+        CONFIG.GAME_LOOP_MIN_MS,
+        Math.min(CONFIG.GAME_LOOP_MAX_MS, calculatedFrequency)
     );
 
     return this.currentFrequency;
@@ -118,7 +118,7 @@ class AdaptiveGameLoop {
    */
   logPerformanceInfo(playerCount: number, entityCount: number): void {
     if (CONFIG.ADAPTIVE_FREQUENCY) {
-      console.log(`[AdaptiveLoop] Players: ${playerCount}, Entities: ${entityCount}, Frequency: ${this.currentFrequency}ms (${Math.round(1000/this.currentFrequency)} FPS)`);
+      console.log(`[AdaptiveLoop] Players: ${playerCount}, Entities: ${entityCount}, Frequency: ${this.currentFrequency}ms (${Math.round(1000 / this.currentFrequency)} FPS)`);
     }
   }
 }
@@ -186,7 +186,6 @@ export class Queue {
           previous.updateRatio();
         }
         this.sendHighScoreToServer();
-        this.currentGame.size();
         break;
       case 'queue':
         const player = this.players.find((player) => payload.key === player.key);
@@ -208,7 +207,6 @@ export class Queue {
         if (playerQuitting) {
           this.currentGame!.unapply(playerQuitting);
           console.log(`Player ${playerQuitting?.name} quitting`);
-          this.currentGame.size();
         }
         break;
       case 'input':
@@ -222,9 +220,9 @@ export class Queue {
         if (!!playerArrow) {
           // Inclure uniquement les flèches des autres joueurs (pas du joueur actuel)
           const otherPlayersArrows = this.players
-            .filter(p => p.key !== playerArrow.key)
-            .map(player => player.arrows)
-            .flat();
+          .filter(p => p.key !== playerArrow.key)
+          .map(player => player.arrows)
+          .flat();
 
           const forbiddenPlaces = [
             ...otherPlayersArrows,
@@ -324,11 +322,11 @@ export class Queue {
       tickRate
     };
 
-    diff = { ...diff, ...metadata };
+    diff = {...diff, ...metadata};
 
     this.lastSentGameState = currentState;
     this.lastBroadcastTime = now;
-    this.lastSnapshot = { ...currentState, ...metadata };
+    this.lastSnapshot = {...currentState, ...metadata};
 
     if (Object.keys(diff).length > 0) {
       const msg: ServerMessage = {
@@ -348,7 +346,7 @@ export class Queue {
     const deltaMs = this.lastBroadcastTime ? now - this.lastBroadcastTime : currentFrequency;
     const baseState = this.currentGame.state();
 
-    const snapshot = this.lastSnapshot ?? { ...baseState, timestamp: now, sequence: this.broadcastSequence, deltaMs, tickRate };
+    const snapshot = this.lastSnapshot ?? {...baseState, timestamp: now, sequence: this.broadcastSequence, deltaMs, tickRate};
     if (!this.lastSnapshot) {
       this.lastSnapshot = snapshot;
     }
@@ -370,7 +368,7 @@ export class Queue {
     const gameState = this.currentGame.state();
     const msg: ServerMessage = {
       type: 'QU_',
-      queue: { state: gameState }
+      queue: {state: gameState}
     };
     const buffer = encodeServerMessage(msg);
     this.servers.forEach((ws) => ws?.send(buffer));
@@ -384,7 +382,7 @@ export class Queue {
     const scoreState = this.state();
     const msg: ServerMessage = {
       type: 'SC_',
-      score: { players: scoreState.players }
+      score: {players: scoreState.players}
     };
     const buffer = encodeServerMessage(msg);
     this.servers.forEach((ws) => ws?.send(buffer));

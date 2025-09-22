@@ -16,8 +16,8 @@ export abstract class GameStrategy {
   cats: Cat[] = [];
   goals: Goal[] = [];
   walls: Wall[] = [];
-  mouseSpeedCases: number;
-  catSpeedCases: number;
+  mouseSpeedCases: number = 1;
+  catSpeedCases: number = 1;
   elapsedSteps = 0;
   name: string = '---';
   mouseStarts: Start[] = [];
@@ -29,9 +29,7 @@ export abstract class GameStrategy {
 
   abstract _step(index: number): void;
 
-  protected constructor(players: Player[], mouseSpeedCases: number = 1, catSpeedCases: number = 1) {
-    this.mouseSpeedCases = mouseSpeedCases;
-    this.catSpeedCases = catSpeedCases;
+  protected constructor(players: Player[]) {
     this.applySpeedCorrection();
     this.goals = GoalFactory.create(players);
     this.mouseStarts = new Array(Math.round((Math.random() * 1000 % 4) + 2)).fill(1).map(() => new Start(Geometry.randomCell(), Geometry.randomDirection()));
@@ -46,8 +44,10 @@ export abstract class GameStrategy {
    * La vitesse de base de la stratégie (this.mouseSpeed/catSpeed) est ajustée dynamiquement.
    */
   applySpeedCorrection() {
-    this.mouseSpeed = this.mouseSpeedCases * (CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS / CONFIG.COLUMNS / CONFIG.COLUMNS) * 20;
-    this.catSpeed = this.catSpeedCases * (CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS / CONFIG.COLUMNS / CONFIG.COLUMNS) * 20;
+    let speedFactor = 20;
+    this.mouseSpeed = this.mouseSpeedCases * speedFactor;
+    this.catSpeed = this.catSpeedCases * speedFactor;
+    console.log(`GameStrategy: adjusted speeds mouseSpeed=${this.mouseSpeed}, catSpeed=${this.catSpeed}`);
     return;
   }
 
