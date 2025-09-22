@@ -145,12 +145,12 @@ export class GameDisplay {
 
   private drawPlayers(state: any) {
     // player goal
-    state.strategy.goals.forEach((goal: any) => {
+    (state.strategy?.goals ?? []).forEach((goal: any) => {
       this.context.drawImage(this.goalImg[goal.color], goal.position[0], goal.position[1], this.cellSize[0], this.cellSize[1]);
     });
 
     //player
-    state.players.forEach((player: any) => {
+    (state.players ?? []).forEach((player: any) => {
       // player position
       this.context.fillStyle = "#FFFFFF";
       this.context.beginPath();

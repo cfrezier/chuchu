@@ -1,6 +1,6 @@
-import { CONFIG } from '../../common/config';
-import { GameDisplay } from '../game.display';
-import { GameState, PlayerState, StrategyState } from '../../../src/messages_pb';
+import {CONFIG} from '../../common/config';
+import {GameDisplay} from '../game.display';
+import {GameState, PlayerState, StrategyState} from '../../../src/messages_pb';
 
 type Snapshot = {
   state: GameState;
@@ -57,7 +57,7 @@ export class HybridPredictiveRenderer {
 
       const renderState = this.computeRenderState();
       if (renderState) {
-        this.gameDisplay.display({ state: renderState });
+        this.gameDisplay.display({state: renderState});
       }
 
       this.lastFrameTime = now;
@@ -144,7 +144,7 @@ export class HybridPredictiveRenderer {
 
   private interpolatePlayers(previousPlayers: PlayerState[], nextPlayers: PlayerState[], factor: number): PlayerState[] {
     const previousById = new Map<string, PlayerState>();
-    previousPlayers.forEach((player, index) => {
+    (previousPlayers ?? []).forEach((player, index) => {
       previousById.set(this.playerId(player, index), player);
     });
 
@@ -153,13 +153,13 @@ export class HybridPredictiveRenderer {
       const previous = previousById.get(key);
 
       const position = previous
-        ? this.interpolatePosition(previous.position, nextPlayer.position, factor)
-        : this.clonePosition(nextPlayer.position);
+          ? this.interpolatePosition(previous.position, nextPlayer.position, factor)
+          : this.clonePosition(nextPlayer.position);
 
       return {
         ...nextPlayer,
         position,
-        arrows: nextPlayer.arrows?.map(arrow => ({ ...arrow, position: this.clonePosition(arrow.position) }))
+        arrows: nextPlayer.arrows?.map(arrow => ({...arrow, position: this.clonePosition(arrow.position)}))
       };
     });
   }
@@ -178,15 +178,15 @@ export class HybridPredictiveRenderer {
 
   private interpolateMovingObjects(previousObjects: any[], nextObjects: any[], factor: number): any[] {
     if (previousObjects.length === 0) {
-      return nextObjects.map(obj => ({ ...obj, position: this.clonePosition(obj.position) }));
+      return nextObjects.map(obj => ({...obj, position: this.clonePosition(obj.position)}));
     }
 
     const matches = this.matchObjectsByProximity(previousObjects, nextObjects);
 
-    return matches.map(({ previous, current }) => {
+    return matches.map(({previous, current}) => {
       const position = previous
-        ? this.interpolatePosition(previous.position, current.position, factor)
-        : this.clonePosition(current.position);
+          ? this.interpolatePosition(previous.position, current.position, factor)
+          : this.clonePosition(current.position);
 
       return {
         ...current,
@@ -196,13 +196,13 @@ export class HybridPredictiveRenderer {
   }
 
   private matchObjectsByProximity(previousObjects: any[], nextObjects: any[]): Array<{ previous?: any; current: any }> {
-    const remainingPrev = previousObjects.map(obj => ({ obj, used: false } as { obj: any; used: boolean }));
+    const remainingPrev = (previousObjects ?? []).map(obj => ({obj, used: false} as { obj: any; used: boolean }));
     const maxDistanceSq = this.maxMatchDistanceSquared();
 
     return nextObjects.map(current => {
       let bestMatchIndex = -1;
       let bestDistance = Number.POSITIVE_INFINITY;
-      remainingPrev.forEach(({ obj, used }, index) => {
+      (remainingPrev ?? []).forEach(({obj, used}, index) => {
         if (used || !obj?.position || !current?.position) {
           return;
         }
@@ -219,7 +219,7 @@ export class HybridPredictiveRenderer {
         remainingPrev[bestMatchIndex].used = true;
       }
 
-      return { previous, current };
+      return {previous, current};
     });
   }
 
@@ -256,7 +256,7 @@ export class HybridPredictiveRenderer {
   }
 
   private mergeState(current: GameState, update: GameState): GameState {
-    const merged: GameState = { ...current };
+    const merged: GameState = {...current};
 
     if (update.players !== undefined) {
       merged.players = update.players;
