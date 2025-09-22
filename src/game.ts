@@ -8,6 +8,7 @@ import {Bot} from './bot';
 import {GameState} from "./messages_pb";
 import {PerformanceMonitor} from "./performance/performance-monitor";
 import {Arrow} from "./game/arrow";
+import {colors} from "./colors";
 
 export class Game {
   players: Player[] = [];
@@ -69,12 +70,35 @@ export class Game {
     return this.activeArrowsScratch;
   }
 
+  /**
+   * Trouve le premier index de couleur disponible pour un nouveau joueur
+   * @returns L'index de la première couleur non utilisée par les joueurs connectés
+   */
+  getAvailableColorIndex(): number {
+    // Récupérer les index de couleurs utilisées par les joueurs connectés
+    const usedColorIndices = this.players
+      .filter(player => player.connected)
+      .map(player => colors.indexOf(player.color))
+      .filter(index => index !== -1); // Filtrer les couleurs invalides
+
+    // Trouver le premier index disponible
+    for (let i = 0; i < colors.length; i++) {
+      if (!usedColorIndices.includes(i)) {
+        return i;
+      }
+    }
+
+    // Si toutes les couleurs sont utilisées, retourner 0 (cas d'urgence)
+    console.warn('Toutes les couleurs sont utilisées, attribution de la couleur par défaut');
+    return 0;
+  }
+
   apply(player: Player) {
     // Ajout du joueur sans changer la stratégie immédiatement
     if (!this.players.filter(player => player.connected).find(playerInGame => playerInGame.key === player.key)) {
       if (this.players.length <= CONFIG.MAX_PLAYERS) {
         this.players.push(player);
-        player.init(this.players.length - 1);
+        player.init(this.getAvailableColorIndex());
         player.queued();
         setTimeout(() => {
           if (this.currentStrategy instanceof StartingStrategy && this.players.length > CONFIG.MIN_PLAYERS) {
