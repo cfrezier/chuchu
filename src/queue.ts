@@ -280,10 +280,13 @@ export class Queue {
   }
 
   disconnect(ws: InstanceType<typeof WebSocket.WebSocket>) {
-    const player = this.players.find(player => player.ws === ws);
-    if (player) {
+    const playerIndex = this.players.findIndex(player => player.ws === ws);
+    if (playerIndex !== -1) {
+      const player = this.players[playerIndex];
       this.currentGame.unapply(player);
       player.disconnect();
+      this.players.splice(playerIndex, 1); // Retire le joueur de la liste
+      this.sendGameToServer(); // Met à jour l'affichage côté serveur
     }
     this.servers = this.servers.filter(server => server !== ws);
     // Flush pending updates before disconnect
