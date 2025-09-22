@@ -28,6 +28,11 @@ export class GameDisplay {
   private lastUseAltUpdate: number = 0;
   private currentGridSize: [number, number] = [0, 0];
 
+  private phaseFontSize: number = 200;
+  private phaseFontMin: number = 60;
+  private phaseFontDecay: number = 2;
+  private lastPhaseName: string = "";
+
   constructor() {
     this.mouseImg = new Image();
     this.mouseImg.src = "/img/mouse.svg";
@@ -89,6 +94,15 @@ export class GameDisplay {
 
   display(newPayload: any) {
     const payload = {...this.previousPayload, ...newPayload, state: {...this.previousPayload.state, ...newPayload.state}};
+
+    // Détection du changement de phase
+    if (payload.state?.strategy?.name !== this.lastPhaseName) {
+      this.phaseFontSize = 200;
+      this.lastPhaseName = payload.state?.strategy?.name;
+    } else if (this.phaseFontSize > this.phaseFontMin) {
+      this.phaseFontSize -= this.phaseFontDecay;
+      if (this.phaseFontSize < this.phaseFontMin) this.phaseFontSize = this.phaseFontMin;
+    }
 
     this.resize(payload.state.cols, payload.state.rows);
 
@@ -217,9 +231,10 @@ export class GameDisplay {
 
   private drawStrategyName(state: any) {
     this.context.fillStyle = "#a0ffff";
-    this.context.font = "50px Arial";
+    this.context.font = `${this.phaseFontSize}px Arial`;
     this.context.textAlign = "center";
-    this.context.fillText(state.strategy.name, CONFIG.GLOBAL_HEIGHT / 2, 100);
+    this.context.textBaseline = "top";
+    this.context.fillText(state.strategy.name, CONFIG.GLOBAL_HEIGHT / 2, 40);
   }
 
   // Performance optimization methods
