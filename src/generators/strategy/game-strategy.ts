@@ -32,8 +32,13 @@ export abstract class GameStrategy {
   protected constructor(players: Player[]) {
     this.applySpeedCorrection();
     this.goals = GoalFactory.create(players);
-    this.mouseStarts = new Array(Math.round((Math.random() * 1000 % 4) + 2)).fill(1).map(() => new Start(Geometry.randomCell(), Geometry.randomDirection()));
-    this.catStarts = new Array(Math.round((Math.random() * 1000 % 2) + 1)).fill(1).map(() => new Start(Geometry.randomCell(), Geometry.randomDirection()));
+
+    // Calcul dynamique du nombre de mouseStarts et catStarts selon le nombre de joueurs
+    const mouseStartCount = Math.max(1, Math.ceil(players.length / 1.5));
+    const catStartCount = Math.max(1, Math.ceil(players.length / 3));
+
+    this.mouseStarts = new Array(mouseStartCount).fill(1).map(() => new Start(Geometry.randomCell(), Geometry.randomDirection()));
+    this.catStarts = new Array(catStartCount).fill(1).map(() => new Start(Geometry.randomCell(), Geometry.randomDirection()));
     this.walls = WallFactory.create([...this.goals, ...this.mouseStarts, ...this.catStarts]);
     this.startDate = Date.now();
     this.spatialGrid = new SpatialGrid();

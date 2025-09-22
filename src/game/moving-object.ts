@@ -19,25 +19,41 @@ export class MovingObject {
   }
 
   move(walls: Wall[], arrows: Arrow[], speed: number) {
-    walls
-    .filter(w => w.wallId !== this.lastCollide)
-    .forEach(wall => {
-      if (this.collides(wall)) {
-        this.direction = DirectionUtils.next(this.direction);
-        this.position = Geometry.moving(this.position, this.direction, -speed);
-        this.lastCollide = wall.wallId;
-      }
-    });
+    // Calculer la position cible avant déplacement
+    const nextPosition = Geometry.moving(this.position, this.direction, speed);
+    let collidedWall: Wall | null = null;
 
+    // Vérifier collision avec les murs sur la position cible
+    walls
+      .filter(w => w.wallId !== this.lastCollide)
+      .forEach(wall => {
+        // On crée un objet temporaire à la position cible pour tester la collision
+        const tempObj = { position: nextPosition, norm: this.norm } as MovingObject;
+        if (wall.collides(tempObj)) {
+          collidedWall = wall;
+        }
+      });
+
+    if (collidedWall) {
+      // Tourner avant d'entrer dans le mur
+      this.direction = DirectionUtils.next(this.direction);
+      this.lastCollide = (collidedWall as Wall).wallId;
+      // On ne déplace pas dans le mur
+    } else {
+      // Déplacement normal
+      this.position = nextPosition;
+      this.lastCollide = "-----";
+    }
+
+    // Gestion des flèches
     arrows.forEach(arrow => {
       if (arrow.collides(this)) {
         this.direction = arrow.direction;
         this.lastCollide = "-----";
       }
-    })
+    });
 
-    this.position = Geometry.moving(this.position, this.direction, speed);
-
+    // Gestion des bords
     if (this.position[0] < 0) {
       this.position[0] = 0;
       this.direction = DirectionUtils.next(this.direction);

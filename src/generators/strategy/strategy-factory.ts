@@ -21,7 +21,7 @@ export class StrategyFactory {
       default:
         strategy = new StrategyFactory.otherStrategies[Math.floor(Math.random() * 13982845) % StrategyFactory.otherStrategies.length](players);
     }
-    console.log(`New Strategy: ${strategy.name} (${strategy.constructor.name}) at ${new Date().toLocaleTimeString()}`);
+    console.log(`New Strategy: ${strategy.name} (${strategy.constructor.name} / ${strategy.mouseStarts.length}ms/${strategy.catStarts.length}cs) at ${new Date().toLocaleTimeString()}`);
     strategy.applySpeedCorrection();
     return strategy;
   }
