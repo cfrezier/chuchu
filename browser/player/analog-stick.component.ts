@@ -5,7 +5,7 @@ export class AnalogStickComponent {
   private centerX: number = 0;
   private centerY: number = 0;
   private maxRadius: number = 0;
-  private deadZone: number = 0.03; // Zone neutre de 3% pour réactivité maximale
+  private deadZone: number = 0.08; // Zone neutre augmentée à 8% pour plus de contrôle
   private animationFrame: number | null = null;
   private moveAnimationFrame: number | null = null;
 
@@ -26,10 +26,14 @@ export class AnalogStickComponent {
   private startTouchX: number = 0;
   private startTouchY: number = 0;
 
+  // Flèche directionnelle
+  private directionArrow: HTMLDivElement | null = null;
+
   init(onMove: (x: number, y: number) => void) {
     this.track = document.getElementById('analog-stick-track') as HTMLDivElement;
     this.knob = document.getElementById('analog-stick-knob') as HTMLDivElement;
-
+    // Ajout de la flèche directionnelle
+    this.directionArrow = document.getElementById('analog-stick-arrow') as HTMLDivElement;
     if (!this.track || !this.knob) {
       console.error('Analog stick elements not found');
       return;
@@ -68,13 +72,7 @@ export class AnalogStickComponent {
     event.preventDefault();
     this.isDragging = true;
     this.knob?.classList.add('dragging');
-
-    // NOUVEAU COMPORTEMENT : juste noter la position de départ du touch
-    // Le stick ne bouge pas au début !
-
     if (!this.track || !this.knob) return;
-
-    // Obtenir la position de départ du touch
     if (event instanceof MouseEvent) {
       this.startTouchX = event.clientX;
       this.startTouchY = event.clientY;
@@ -83,7 +81,9 @@ export class AnalogStickComponent {
       this.startTouchX = event.touches[0].clientX;
       this.startTouchY = event.touches[0].clientY;
     }
-
+    // Déplacement immédiat du knob au début du drag
+    this.updateKnobPosition(0, 0);
+    this.updateDirectionArrow(0, 0);
   }
 
   private handleMove(event: MouseEvent | TouchEvent) {
@@ -147,7 +147,7 @@ export class AnalogStickComponent {
     const normalizedX = newStickX / maxRadius;
     const normalizedY = newStickY / maxRadius;
     const magnitude = Math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY);
-
+    this.updateDirectionArrow(normalizedX, normalizedY);
 
     // Zone morte et mouvement continu (comportement manette)
     if (magnitude > this.deadZone) {
@@ -190,50 +190,47 @@ export class AnalogStickComponent {
     // Position relative au centre du track (x et y sont déjà relatifs au centre)
     // CORRIGER : x et y sont les offsets depuis le centre
     this.knob.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+    // Feedback visuel : couleur selon la force
+    const force = Math.min(1, Math.sqrt(x * x + y * y) / this.maxRadius);
+    const color = `rgba(${Math.floor(255 * force)}, ${Math.floor(100 + 155 * (1-force))}, 100, 0.8)`;
+    this.knob.style.background = color;
+  }
+
+  private updateDirectionArrow(normX: number, normY: number) {
+    if (!this.directionArrow) return;
+    const magnitude = Math.sqrt(normX * normX + normY * normY);
+    if (magnitude < this.deadZone) {
+      this.directionArrow.style.opacity = '0';
+      return;
+    }
+    this.directionArrow.style.opacity = '1';
+    // Calcul de l'angle
+    const angle = Math.atan2(normY, normX) * 180 / Math.PI;
+    this.directionArrow.style.transform = `translate(-50%, -50%) rotate(${angle}deg) scale(${0.7 + magnitude * 0.7})`;
+    // Couleur selon la force
+    this.directionArrow.style.background = `rgba(255, 180, 0, ${0.3 + magnitude * 0.7})`;
   }
 
   private startContinuousMove() {
-    if (this.isMoving) return; // Déjà en mouvement
-
+    if (this.isMoving) return;
     this.isMoving = true;
     let lastTime = performance.now();
-
     const moveLoop = (currentTime: number) => {
       if (!this.isMoving) return;
-
-      // Calcul du delta time pour un mouvement frame-rate indépendant
-      const deltaTime = (currentTime - lastTime) / 16.67; // Normaliser par 60fps
+      const deltaTime = (currentTime - lastTime) / 16.67;
       lastTime = currentTime;
-
-      // Vitesse adaptative avec courbe d'accélération contrôlée
-      const baseSpeed = 0.035; // Vitesse initiale réduite (était 0.045)
-      const maxSpeed = 0.055; // Vitesse maximale pour éviter l'emballement
+      // Courbe de vitesse plus linéaire
+      const baseSpeed = 0.04;
+      const maxSpeed = 0.07;
       const magnitude = Math.sqrt(this.moveDirectionX * this.moveDirectionX + this.moveDirectionY * this.moveDirectionY);
-
-      // Courbe de précision : plus lent près du centre pour le contrôle fin
-      let precisionMultiplier = 1.0;
-      if (magnitude < 0.3) {
-        // Zone de précision (30% du rayon) : ralentir progressivement
-        precisionMultiplier = 0.3 + (magnitude / 0.3) * 0.7; // De 0.3 à 1.0
-      }
-
-      // Courbe d'accélération plus douce : linear + léger boost
-      const speedMultiplier = (0.5 + (magnitude * 0.5)) * precisionMultiplier;
+      const speedMultiplier = magnitude; // linéaire
       const rawSpeed = baseSpeed * speedMultiplier * deltaTime;
-      const speed = Math.min(rawSpeed, maxSpeed * deltaTime); // Cap à la vitesse max
-
-      // Calculer le déplacement
+      const speed = Math.min(rawSpeed, maxSpeed * deltaTime);
       const deltaX = this.moveDirectionX * speed;
       const deltaY = this.moveDirectionY * speed;
-
-      // Mettre à jour la position du curseur
       this.cursorX = Math.max(0, Math.min(1, this.cursorX + deltaX));
       this.cursorY = Math.max(0, Math.min(1, this.cursorY + deltaY));
-
-      // Envoyer la nouvelle position
       this.onMove(this.cursorX, this.cursorY);
-
-      // Continuer la boucle
       this.moveAnimationFrame = requestAnimationFrame(moveLoop);
     };
 
