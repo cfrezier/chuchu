@@ -9,7 +9,7 @@ export class MouseMania extends GameStrategy {
   constructor(players: Player[]) {
     super(players);
     this.name = 'Mouse Mania';
-    this.mouseSpeed = 2;
+    this.mouseSpeedCases = 2;
     this.catStarts = [];
     this.walls = WallFactory.create([...this.goals, ...this.mouseStarts, ...this.catStarts]);
   }

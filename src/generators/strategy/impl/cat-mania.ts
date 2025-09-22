@@ -8,7 +8,7 @@ export class CatMania extends GameStrategy {
   constructor(players: Player[]) {
     super(players);
     this.name = 'Cat Mania';
-    this.catSpeed = 2;
+    this.catSpeedCases = 2;
     this.mouseStarts = [];
     this.walls = WallFactory.create([...this.goals, ...this.mouseStarts, ...this.catStarts]);
   }

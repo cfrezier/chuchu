@@ -4,31 +4,36 @@ import {Wall} from "../../wall";
 import {MovingObject} from "../../game/moving-object";
 import {GoalFactory} from "../goal/goal-factory";
 import {Player} from "../../player";
-import {CONFIG} from "../../../browser/common/config";
 import {WallFactory} from "../wall/wall-factory";
 import {Geometry} from "../../geometry";
 import {Goal} from "../../game/impl/goal";
 import {Start} from "../../start";
 import {SpatialGrid} from "../../performance/spatial-grid";
+import {CONFIG} from "../../../browser/common/config";
 
 export abstract class GameStrategy {
   mouses: Mouse[] = [];
   cats: Cat[] = [];
   goals: Goal[] = [];
   walls: Wall[] = [];
-  mouseSpeed: number = 1;
-  catSpeed: number = 1;
+  mouseSpeedCases: number;
+  catSpeedCases: number;
   elapsedSteps = 0;
   name: string = '---';
   mouseStarts: Start[] = [];
   catStarts: Start[] = [];
   startDate: number;
-  speedAdjusted = false;
   spatialGrid: SpatialGrid;
+  mouseSpeed: number;
+  catSpeed: number;
 
   abstract _step(index: number): void;
 
-  protected constructor(players: Player[]) {
+  protected constructor(players: Player[], mouseSpeedCases: number = 1, catSpeedCases: number = 1) {
+    this.mouseSpeedCases = mouseSpeedCases;
+    this.catSpeedCases = catSpeedCases;
+    this.mouseSpeed = mouseSpeedCases * (CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS);
+    this.catSpeed = catSpeedCases * (CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS);
     this.goals = GoalFactory.create(players);
     this.mouseStarts = new Array(Math.round((Math.random() * 1000 % 4) + 2)).fill(1).map(() => new Start(Geometry.randomCell(), Geometry.randomDirection()));
     this.catStarts = new Array(Math.round((Math.random() * 1000 % 2) + 1)).fill(1).map(() => new Start(Geometry.randomCell(), Geometry.randomDirection()));
@@ -42,27 +47,9 @@ export abstract class GameStrategy {
    * La vitesse de base de la stratégie (this.mouseSpeed/catSpeed) est ajustée dynamiquement.
    */
   applySpeedCorrection() {
-    if (this.speedAdjusted) {
-      return;
-    }
-    this.speedAdjusted = true;
-
-    // On part de la vitesse souhaitée par la stratégie (valeur courante)
-    const baseMouseSpeed = this.mouseSpeed;
-    const baseCatSpeed = this.catSpeed;
-
-    // Formule linéaire :
-    // Calcul dynamique de a et b pour la formule linéaire
-    // Pour 15 cases : vitesse = 2
-    // Pour 45 cases : vitesse = 0.15
-    const x1 = 15, y1 = 2;
-    const x2 = 45, y2 = 0.2;
-    const a = (y2 - y1) / (x2 - x1); // pente
-    const b = y1 - a * x1;           // ordonnée à l'origine
-    const speedFactor = a * CONFIG.ROWS + b;
-
-    this.mouseSpeed = baseMouseSpeed * speedFactor;
-    this.catSpeed = baseCatSpeed * speedFactor;
+    this.mouseSpeed = mouseSpeedCases * (CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS);
+    this.catSpeed = catSpeedCases * (CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS);
+    return;
   }
 
   step(): void {

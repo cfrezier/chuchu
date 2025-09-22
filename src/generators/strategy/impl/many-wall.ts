@@ -8,8 +8,8 @@ export class ManyWalls extends GameStrategy {
   constructor(players: Player[]) {
     super(players);
     this.name = 'Wall Valley';
-    this.catSpeed = 5;
-    this.mouseSpeed = 5;
+    this.catSpeedCases = 5;
+    this.mouseSpeedCases = 5;
     this.walls.push(...WallFactory.create(this.goals),...WallFactory.create(this.goals),...WallFactory.create(this.goals),)
   }
 

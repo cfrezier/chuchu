@@ -78,7 +78,6 @@ export class Game {
         if (this.players.length > CONFIG.MIN_PLAYERS) {
           console.log('starting game execution...')
           this.currentStrategy = StrategyFactory.next(this.currentStrategy, this.players);
-          this.currentStrategy.applySpeedCorrection();
           this.queue.doneWaiting();
           this.queue.executeGame();
           this.queue.sendQueueUpdate();
