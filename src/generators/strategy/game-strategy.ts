@@ -24,16 +24,15 @@ export abstract class GameStrategy {
   catStarts: Start[] = [];
   startDate: number;
   spatialGrid: SpatialGrid;
-  mouseSpeed: number;
-  catSpeed: number;
+  mouseSpeed: number = 1;
+  catSpeed: number = 1;
 
   abstract _step(index: number): void;
 
   protected constructor(players: Player[], mouseSpeedCases: number = 1, catSpeedCases: number = 1) {
     this.mouseSpeedCases = mouseSpeedCases;
     this.catSpeedCases = catSpeedCases;
-    this.mouseSpeed = mouseSpeedCases * (CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS);
-    this.catSpeed = catSpeedCases * (CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS);
+    this.applySpeedCorrection();
     this.goals = GoalFactory.create(players);
     this.mouseStarts = new Array(Math.round((Math.random() * 1000 % 4) + 2)).fill(1).map(() => new Start(Geometry.randomCell(), Geometry.randomDirection()));
     this.catStarts = new Array(Math.round((Math.random() * 1000 % 2) + 1)).fill(1).map(() => new Start(Geometry.randomCell(), Geometry.randomDirection()));
@@ -47,8 +46,8 @@ export abstract class GameStrategy {
    * La vitesse de base de la stratégie (this.mouseSpeed/catSpeed) est ajustée dynamiquement.
    */
   applySpeedCorrection() {
-    this.mouseSpeed = mouseSpeedCases * (CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS);
-    this.catSpeed = catSpeedCases * (CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS);
+    this.mouseSpeed = this.mouseSpeedCases * (CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS / CONFIG.COLUMNS / CONFIG.COLUMNS) * 20;
+    this.catSpeed = this.catSpeedCases * (CONFIG.GLOBAL_WIDTH / CONFIG.COLUMNS / CONFIG.COLUMNS / CONFIG.COLUMNS) * 20;
     return;
   }
 
