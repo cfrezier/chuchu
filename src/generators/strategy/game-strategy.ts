@@ -9,6 +9,7 @@ import {WallFactory} from "../wall/wall-factory";
 import {Geometry} from "../../geometry";
 import {Goal} from "../../game/impl/goal";
 import {Start} from "../../start";
+import {SpatialGrid} from "../../performance/spatial-grid";
 
 export abstract class GameStrategy {
   mouses: Mouse[] = [];
@@ -23,6 +24,7 @@ export abstract class GameStrategy {
   catStarts: Start[] = [];
   startDate: number;
   speedAdjusted = false;
+  spatialGrid: SpatialGrid;
 
   abstract _step(index: number): void;
 
@@ -32,6 +34,7 @@ export abstract class GameStrategy {
     this.catStarts = new Array(Math.round((Math.random() * 1000 % 2) + 1)).fill(1).map(() => new Start(Geometry.randomCell(), Geometry.randomDirection()));
     this.walls = WallFactory.create([...this.goals, ...this.mouseStarts, ...this.catStarts]);
     this.startDate = Date.now();
+    this.spatialGrid = new SpatialGrid();
   }
 
   /**
@@ -111,5 +114,41 @@ export abstract class GameStrategy {
   unapply(player: Player) {
     this.goals = this.goals.filter(goal => goal.player.key !== player.key);
     this.reward([player]);
+  }
+
+  /**
+   * Optimized collision detection using spatial partitioning.
+   * Returns pairs of [mouse, cat] that are colliding.
+   */
+  findCollisions(): [Mouse, Cat][] {
+    const collisions: [Mouse, Cat][] = [];
+
+    // Clear and populate spatial grid
+    this.spatialGrid.clear();
+    this.spatialGrid.optimizeCellSize(this.mouses.length + this.cats.length);
+
+    // Insert all moving objects into spatial grid
+    [...this.mouses, ...this.cats].forEach(obj => {
+      this.spatialGrid.insert(obj);
+    });
+
+    // Check collisions only between nearby objects
+    this.mouses.forEach(mouse => {
+      const nearbyObjects = this.spatialGrid.getNearbyObjects(mouse);
+      nearbyObjects.forEach(obj => {
+        if (obj instanceof Cat && mouse.collides(obj)) {
+          collisions.push([mouse, obj]);
+        }
+      });
+    });
+
+    return collisions;
+  }
+
+  /**
+   * Gets spatial grid statistics for performance monitoring
+   */
+  getSpatialGridStats() {
+    return this.spatialGrid.getStats();
   }
 }

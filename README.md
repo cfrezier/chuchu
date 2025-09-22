@@ -16,9 +16,9 @@ Ce projet pousse le concept encore plus loin : jusqu'à 32 joueurs peuvent s'aff
 
 *Exemple d'une partie en cours sur l'affichage principal. Le QRCode en haut à gauche permet aux joueurs de rejoindre la partie facilement depuis leur mobile.*
 
-<img src="pad.png" alt="Pad de contrôle joueur" width="300"/>
+<img src="new-pad.png" alt="Interface gamepad analogique" width="300"/>
 
-*Interface de contrôle (pad) utilisée par les joueurs préférentiellement sur mobile. Le carré à gauche fonctionne comme un trackpad, les flèches permettent de poser une flèche selon l'orientation à l'emplacement du curseur du joueur.*
+*Interface de contrôle gamepad moderne avec stick analogique circulaire pour le mouvement (gauche) et boutons directionnels pour placer les flèches (droite). Optimisée pour mobile avec support multi-touch.*
 
 ---
 
@@ -81,6 +81,22 @@ flowchart TD
 - **static/** 📁 : ressources statiques (images SVG, HTML, CSS).
 
 Le serveur envoie en temps réel l'état du jeu à tous les clients connectés, qui affichent alors la partie en cours. Les joueurs interagissent en plaçant des flèches pour guider les souris. L'ensemble du code est écrit en TypeScript pour une meilleure maintenabilité et évolutivité.
+
+---
+
+## ⚙️ Configuration
+
+Les paramètres critiques du gameplay et des performances sont centralisés dans `static/config.json` (copié côté serveur) et synchronisés dans `browser/common/config.ts` pour le front. Voici les clés à ajuster en fonction de votre infrastructure :
+
+| Paramètre | Description | Impact principal |
+| --- | --- | --- |
+| `GAME_LOOP_MS` / `SERVER_TICK_RATE` | Durée cible entre deux ticks serveur (ms) et taux autoritaire annoncé. | Charge CPU côté serveur, fréquence des mises à jour logiques. |
+| `SERVER_BROADCAST_INTERVAL_MS` | Seuil minimal entre deux diffusions WebSocket de l’état. | Débit réseau et charge des clients. |
+| `BASE_TICK_MS` | Tick de référence utilisé pour normaliser les vitesses des entités. | Vitesse perçue des souris/chats lorsque le tick-rate varie. |
+| `RENDER_INTERPOLATION_DELAY_MS`, `RENDER_MAX_PREDICTION_MS`, `RENDER_BUFFER_MS` | Fenêtres temporelles de l’interpolation/prediction client. | Fluidité visuelle, tolérance à la latence. |
+| `MAX_MOUSES`, `MAX_CATS`, `MAX_PLAYERS` | Limites d’entités simultanées. | Lisibilité du jeu, charge CPU/GPU. |
+
+> **Astuce :** après modification, redémarrez le serveur pour recharger la configuration. Les clients Web n’ont pas besoin d’être recompilés si vous ne changez que `static/config.json`.
 
 ---
 

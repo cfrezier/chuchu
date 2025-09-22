@@ -7,6 +7,122 @@ import {CONFIG} from "../browser/common/config";
 import {Bot} from "./bot";
 import { encodeServerMessage, ServerMessage } from './messages_pb';
 
+/**
+ * Optimiseur de batching WebSocket pour éviter les envois redondants
+ * Regroupe les mises à jour similaires et évite les envois multiples par frame
+ */
+class WebSocketBatcher {
+  private pendingUpdates = new Set<string>();
+  private batchTimer: NodeJS.Timeout | null = null;
+  private readonly BATCH_DELAY = 5; // ms - délai minimal entre envois
+  private queue: Queue;
+
+  constructor(queue: Queue) {
+    this.queue = queue;
+  }
+
+  /**
+   * Programme une mise à jour pour envoi groupé
+   */
+  scheduleUpdate(updateType: 'game' | 'queue' | 'highscore') {
+    this.pendingUpdates.add(updateType);
+
+    if (!this.batchTimer) {
+      this.batchTimer = setTimeout(() => {
+        this.flushUpdates();
+      }, this.BATCH_DELAY);
+    }
+  }
+
+  /**
+   * Envoi immédiat pour les mises à jour critiques
+   */
+  sendImmediate(updateType: 'game' | 'queue' | 'highscore') {
+    this.pendingUpdates.add(updateType);
+    this.flushUpdates();
+  }
+
+  /**
+   * Traite et envoie toutes les mises à jour en attente
+   */
+  private flushUpdates() {
+    if (this.pendingUpdates.has('game')) {
+      this.queue.sendGameToServerInternal();
+    }
+    if (this.pendingUpdates.has('queue')) {
+      this.queue.sendQueueUpdateInternal();
+    }
+    if (this.pendingUpdates.has('highscore')) {
+      this.queue.sendHighScoreToServerInternal();
+    }
+
+    this.pendingUpdates.clear();
+    this.batchTimer = null;
+  }
+
+  /**
+   * Force l'envoi de toutes les mises à jour en attente (pour cleanup)
+   */
+  flush() {
+    if (this.batchTimer) {
+      clearTimeout(this.batchTimer);
+      this.flushUpdates();
+    }
+  }
+}
+
+/**
+ * Gestionnaire de fréquence adaptative pour optimiser les performances
+ * selon le nombre de joueurs et d'entités dans le jeu
+ */
+class AdaptiveGameLoop {
+  private currentFrequency: number = CONFIG.GAME_LOOP_MS;
+
+  /**
+   * Calcule la fréquence optimale basée sur la charge du jeu
+   */
+  calculateOptimalFrequency(playerCount: number, entityCount: number): number {
+    if (!CONFIG.ADAPTIVE_FREQUENCY) {
+      return CONFIG.GAME_LOOP_MS;
+    }
+
+    // Formule adaptative : plus de joueurs/entités = fréquence plus lente
+    const baseFrequency = CONFIG.GAME_LOOP_MIN_MS;
+
+    // Facteur basé sur le nombre de joueurs (moins critique)
+    const playerFactor = Math.floor(playerCount / 8) * 5;
+
+    // Facteur basé sur le nombre d'entités (plus critique)
+    const entityFactor = Math.floor(entityCount / 50) * 3;
+
+    // Calcul de la fréquence avec contraintes min/max
+    const calculatedFrequency = baseFrequency + playerFactor + entityFactor;
+
+    this.currentFrequency = Math.max(
+      CONFIG.GAME_LOOP_MIN_MS,
+      Math.min(CONFIG.GAME_LOOP_MAX_MS, calculatedFrequency)
+    );
+
+    return this.currentFrequency;
+  }
+
+  /**
+   * Retourne la fréquence actuelle
+   */
+  getCurrentFrequency(): number {
+    return this.currentFrequency;
+  }
+
+  /**
+   * Log des informations de performance (pour debug)
+   */
+  logPerformanceInfo(playerCount: number, entityCount: number): void {
+    if (CONFIG.ADAPTIVE_FREQUENCY) {
+      console.log(`[AdaptiveLoop] Players: ${playerCount}, Entities: ${entityCount}, Frequency: ${this.currentFrequency}ms (${Math.round(1000/this.currentFrequency)} FPS)`);
+    }
+  }
+}
+
 export class Queue {
   players = [] as Player[];
   currentGame: Game;
@@ -14,9 +130,18 @@ export class Queue {
   path: string;
   lastSave: string = '[]';
   savePlanned = false;
+  private adaptiveLoop: AdaptiveGameLoop;
+  private batcher: WebSocketBatcher;
+  private lastSentGameState: any = null;
+  private lastBroadcastTime = 0;
+  private broadcastSequence = 0;
+  private lastSnapshot: any = null;
+  private lastTickTime: number = Date.now();
 
   constructor(path: string) {
     this.path = path;
+    this.adaptiveLoop = new AdaptiveGameLoop();
+    this.batcher = new WebSocketBatcher(this);
     fs.readFile(this.path, 'utf8', (err, data) => {
       if (err) {
         console.error('Cannont initialize', err);
@@ -95,21 +220,41 @@ export class Queue {
       case 'arrow':
         const playerArrow = this.players.find((player) => payload.key === player.key);
         if (!!playerArrow) {
-          playerArrow.arrow(payload, playerArrow.position, [...this.players.map(player => player.arrows).flat(), ...this.currentGame.currentStrategy.goals]);
+          // Inclure uniquement les flèches des autres joueurs (pas du joueur actuel)
+          const otherPlayersArrows = this.players
+            .filter(p => p.key !== playerArrow.key)
+            .map(player => player.arrows)
+            .flat();
+
+          const forbiddenPlaces = [
+            ...otherPlayersArrows,
+            ...this.currentGame.currentStrategy.goals,
+            ...this.currentGame.currentStrategy.walls
+          ];
+
+          playerArrow.arrow(payload, playerArrow.position, forbiddenPlaces);
         }
         break;
       case 'server':
         this.servers.push(ws);
-        this.sendQueueUpdate();
+        // Send immediate state to newly connected server
         this.sendGameTo(ws!);
-        this.sendHighScoreToServer();
+        this.batcher.sendImmediate('queue');
+        this.batcher.sendImmediate('highscore');
         break;
     }
   }
 
   executeGame() {
     this.currentGame!.started = this.currentGame.players.length >= CONFIG.MIN_PLAYERS;
-    this.currentGame!.execute(() => {
+    const now = Date.now();
+    const rawDelta = now - this.lastTickTime;
+    const baselineTick = CONFIG.BASE_TICK_MS ?? 20;
+    const fallbackDelta = CONFIG.SERVER_BROADCAST_INTERVAL_MS ?? CONFIG.GAME_LOOP_MS ?? baselineTick;
+    const deltaMs = rawDelta > 0 ? rawDelta : fallbackDelta;
+    this.lastTickTime = now;
+
+    this.currentGame!.execute(deltaMs, () => {
       this.sendHighScoreToServer();
       this.sendGameToServer();
       this.sendQueueUpdate();
@@ -117,7 +262,19 @@ export class Queue {
     });
     this.sendGameToServer();
     if (this.currentGame!.started) {
-      setTimeout(() => this.executeGame(), CONFIG.GAME_LOOP_MS);
+      // Calcul de la fréquence adaptative
+      const playerCount = this.currentGame.players.filter(p => p.connected).length;
+      const strategy = this.currentGame.currentStrategy;
+      const entityCount = (strategy?.mouses?.length || 0) + (strategy?.cats?.length || 0);
+
+      const optimalFrequency = this.adaptiveLoop.calculateOptimalFrequency(playerCount, entityCount);
+
+      // Log pour debug (seulement si la fréquence change)
+      if (optimalFrequency !== this.adaptiveLoop.getCurrentFrequency()) {
+        this.adaptiveLoop.logPerformanceInfo(playerCount, entityCount);
+      }
+
+      setTimeout(() => this.executeGame(), optimalFrequency);
     } else {
       this.currentGame.clear();
       this.sendGameToServer();
@@ -127,18 +284,28 @@ export class Queue {
   disconnect(ws: InstanceType<typeof WebSocket.WebSocket>) {
     this.players.find(player => player.ws === ws)?.disconnect();
     this.servers = this.servers.filter(server => server !== ws);
+    // Flush pending updates before disconnect
+    this.batcher.flush();
   }
 
-  private previousGameState: any = null;
-
   public sendGameToServer() {
+    this.batcher.scheduleUpdate('game');
+  }
+
+  public sendGameToServerInternal() {
+    const now = Date.now();
+    const targetInterval = Math.max(CONFIG.SERVER_BROADCAST_INTERVAL_MS ?? 50, this.adaptiveLoop.getCurrentFrequency());
+    if (this.lastBroadcastTime && now - this.lastBroadcastTime < targetInterval) {
+      return;
+    }
+
     const currentState = this.currentGame?.state();
     let diff: any = {};
 
-    if (this.previousGameState) {
+    if (this.lastSentGameState) {
       for (const key in currentState) {
         // @ts-ignore
-        if (JSON.stringify(currentState[key]) !== JSON.stringify(this.previousGameState[key])) {
+        if (JSON.stringify(currentState[key]) !== JSON.stringify(this.lastSentGameState[key])) {
           // @ts-ignore
           diff[key] = currentState[key];
         }
@@ -147,7 +314,21 @@ export class Queue {
       diff = currentState;
     }
 
-    this.previousGameState = currentState;
+    const deltaMs = this.lastBroadcastTime ? now - this.lastBroadcastTime : targetInterval;
+    this.broadcastSequence += 1;
+    const tickRate = Math.round(1000 / this.adaptiveLoop.getCurrentFrequency());
+    const metadata = {
+      timestamp: now,
+      sequence: this.broadcastSequence,
+      deltaMs,
+      tickRate
+    };
+
+    diff = { ...diff, ...metadata };
+
+    this.lastSentGameState = currentState;
+    this.lastBroadcastTime = now;
+    this.lastSnapshot = { ...currentState, ...metadata };
 
     if (Object.keys(diff).length > 0) {
       const msg: ServerMessage = {
@@ -161,16 +342,30 @@ export class Queue {
 
   public sendGameTo(ws: WebSocket) {
     if (!this.currentGame) return;
-    const gameState = this.currentGame.state();
+    const now = Date.now();
+    const currentFrequency = this.adaptiveLoop.getCurrentFrequency();
+    const tickRate = Math.round(1000 / currentFrequency);
+    const deltaMs = this.lastBroadcastTime ? now - this.lastBroadcastTime : currentFrequency;
+    const baseState = this.currentGame.state();
+
+    const snapshot = this.lastSnapshot ?? { ...baseState, timestamp: now, sequence: this.broadcastSequence, deltaMs, tickRate };
+    if (!this.lastSnapshot) {
+      this.lastSnapshot = snapshot;
+    }
+
     const msg: ServerMessage = {
       type: 'GAME_',
-      game: gameState
+      game: snapshot
     };
     const buffer = encodeServerMessage(msg);
     ws.send(buffer);
   }
 
   public sendQueueUpdate() {
+    this.batcher.scheduleUpdate('queue');
+  }
+
+  public sendQueueUpdateInternal() {
     if (!this.currentGame) return;
     const gameState = this.currentGame.state();
     const msg: ServerMessage = {
@@ -181,7 +376,11 @@ export class Queue {
     this.servers.forEach((ws) => ws?.send(buffer));
   }
 
-  private sendHighScoreToServer() {
+  public sendHighScoreToServer() {
+    this.batcher.scheduleUpdate('highscore');
+  }
+
+  public sendHighScoreToServerInternal() {
     const scoreState = this.state();
     const msg: ServerMessage = {
       type: 'SC_',

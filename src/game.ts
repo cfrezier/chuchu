@@ -6,6 +6,8 @@ import {StartingStrategy} from "./generators/strategy/impl/starting-strategy";
 import {StrategyFactory} from "./generators/strategy/strategy-factory";
 import {Bot} from './bot';
 import {GameState} from "./messages_pb";
+import {PerformanceMonitor} from "./performance/performance-monitor";
+import {Arrow} from "./game/arrow";
 
 export class Game {
   players: Player[] = [];
@@ -16,6 +18,9 @@ export class Game {
   phases = 1;
   bots: Bot[] = [];
   private lastBotActionTime: number = 0;
+  private lastPerformanceLog: number = 0;
+  // Scratch buffer to avoid array allocations in game loop
+  private activeArrowsScratch: Arrow[] = [];
 
   constructor(queue: Queue) {
     this.queue = queue;
@@ -44,6 +49,24 @@ export class Game {
       console.log(`Bot ${i + 1} joined and queued.`);
       this.bots.push(bot);
     }
+  }
+
+  /**
+   * Efficiently collect all active arrows using a reusable scratch buffer
+   * to avoid memory allocations in the game loop hot path.
+   * @returns Array of all arrows from all players
+   */
+  private collectActiveArrows(): Arrow[] {
+    this.activeArrowsScratch.length = 0; // Reset without allocation
+
+    for (let i = 0; i < this.players.length; i++) {
+      const arrows = this.players[i].arrows;
+      for (let j = 0; j < arrows.length; j++) {
+        this.activeArrowsScratch.push(arrows[j]);
+      }
+    }
+
+    return this.activeArrowsScratch;
   }
 
   apply(player: Player) {
@@ -118,7 +141,7 @@ export class Game {
     CONFIG.COLUMNS = size;
   }
 
-  execute(changeScoreListener: () => void) {
+  execute(deltaMs: number, changeScoreListener: () => void) {
     let sendUpdate = false;
 
     // Limite globale d'action des bots
@@ -135,10 +158,24 @@ export class Game {
       });
     }
 
-    this.currentStrategy.mouses.forEach(mouse => mouse.move(this.currentStrategy.walls, this.players.map(player => player.arrows).flat(), this.currentStrategy.mouseSpeed));
-    this.currentStrategy.cats.forEach(cat => cat.move(this.currentStrategy.walls, this.players.map(player => player.arrows).flat(), this.currentStrategy.catSpeed));
+    const baselineTickMs = CONFIG.BASE_TICK_MS ?? 20;
+    const effectiveDelta = Math.max(deltaMs, 1);
+    const clampedDelta = Math.min(effectiveDelta, baselineTickMs * 3);
+    const speedMultiplier = clampedDelta / baselineTickMs;
+    const activeArrows = this.collectActiveArrows();
+
+    this.currentStrategy.mouses.forEach(mouse => {
+      const speed = this.currentStrategy.mouseSpeed * 2; // TEST: sans speedMultiplier
+      mouse.move(this.currentStrategy.walls, activeArrows, speed);
+    });
+    this.currentStrategy.cats.forEach(cat => {
+      const speed = this.currentStrategy.catSpeed; // TEST: sans speedMultiplier
+      cat.move(this.currentStrategy.walls, activeArrows, speed);
+    });
     this.currentStrategy.goals.map(goal => {
-      const absorbed = goal.absorbing([...this.currentStrategy.mouses, ...this.currentStrategy.cats]);
+      // Optimisation: utiliser SpatialGrid au lieu de tester toutes les souris
+      const nearbyObjects = this.currentStrategy.spatialGrid.getNearbyObjects(goal);
+      const absorbed = goal.absorbing(nearbyObjects);
       if (absorbed && absorbed.length > 0) {
         absorbed.forEach(absorbedObject => goal.player.absorb(absorbedObject));
         this.currentStrategy.remove(absorbed);
@@ -146,13 +183,15 @@ export class Game {
       }
     });
 
-    this.currentStrategy.mouses.forEach(mouse => {
-      this.currentStrategy.cats.forEach(cat => {
-        if (mouse.collides(cat)) {
-          this.currentStrategy.remove([mouse]);
-        }
-      });
-    });
+    // Optimized collision detection using spatial partitioning
+    const collisionStartTime = PerformanceMonitor.startTiming('collision-detection');
+    const collisions = this.currentStrategy.findCollisions();
+    PerformanceMonitor.endTiming('collision-detection', collisionStartTime);
+
+    if (collisions.length > 0) {
+      const mousesToRemove = collisions.map(([mouse, cat]) => mouse);
+      this.currentStrategy.remove(mousesToRemove);
+    }
 
     // Phase Management
     this.currentStrategy.step();
@@ -167,6 +206,19 @@ export class Game {
 
     if (sendUpdate) {
       changeScoreListener();
+    }
+
+    // Log performance statistics every 30 seconds
+    const currentTime = Date.now();
+    if (currentTime - this.lastPerformanceLog >= 30000) {
+      this.lastPerformanceLog = currentTime;
+      const spatialStats = this.currentStrategy.getSpatialGridStats();
+      console.log(`🗺️ Spatial Grid Stats - Objects: ${spatialStats.totalObjects}, Cells: ${spatialStats.occupiedCells}/${spatialStats.totalCells}, Avg/Cell: ${spatialStats.averageObjectsPerCell.toFixed(1)}`);
+
+      const perfStats = PerformanceMonitor.getStats('collision-detection');
+      if (perfStats) {
+        console.log(`⚡ Collision Detection - Avg: ${perfStats.average.toFixed(3)}ms, Min: ${perfStats.min.toFixed(3)}ms, Max: ${perfStats.max.toFixed(3)}ms`);
+      }
     }
   }
 

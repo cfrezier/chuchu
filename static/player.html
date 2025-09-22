@@ -1,10 +1,11 @@
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>chuchu - joueur</title>
     <link rel="stylesheet" href="/player.css">
     <script type="text/javascript" src="/js/player/index.js"></script>
     <meta name="viewport"
-          content="width=device-width, height=device-height, initial-scale=1, minimum-scale=1, maximum-scale=1"/>
+          content="width=device-width, height=device-height, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"/>
 </head>
 <body>
 <a href="https://github.com/cfrezier/chuchu" target="_blank" class="fork-me">
@@ -23,14 +24,16 @@
     <div class="input" id="panel-input">
         <div id="player-label"></div>
         <div class="pad">
-            <div class="trackpad" id="trackpad"></div>
-            <div class="buttons">
-                <button class="btn btn-arrow" id="arrow-up">&#8593;</button>
-                <div class="middle-arrows">
-                    <button class="btn btn-arrow" id="arrow-left">&#8592;</button>
-                    <button class="btn btn-arrow" id="arrow-right">&#8594;</button>
+            <div class="analog-stick-container">
+                <div class="analog-stick-track" id="analog-stick-track">
+                    <div class="analog-stick-knob" id="analog-stick-knob"></div>
                 </div>
-                <button class="btn btn-arrow" id="arrow-down">&#8595;</button>
+            </div>
+            <div class="buttons">
+                <button class="btn btn-arrow btn-arrow-up" id="arrow-up"></button>
+                <button class="btn btn-arrow btn-arrow-left" id="arrow-left"></button>
+                <button class="btn btn-arrow btn-arrow-right" id="arrow-right"></button>
+                <button class="btn btn-arrow btn-arrow-down" id="arrow-down"></button>
             </div>
         </div>
         <button class="btn" id="quit">Quitter</button>

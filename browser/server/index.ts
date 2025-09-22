@@ -5,14 +5,15 @@ import {QrCodeDisplay} from "./qrcode.display";
 import {createWs} from '../common/ws';
 import {CONFIG} from "../common/config";
 import {decodeServerMessage, ServerMessage} from '../../src/messages_pb';
+import {HybridPredictiveRenderer} from './netcode/hybrid-predictive-renderer';
 
 const queue = new QueueDisplay();
 const score = new ScoreDisplay();
 const game = new GameDisplay();
 const qrcode = new QrCodeDisplay();
+const predictiveRenderer = new HybridPredictiveRenderer(game);
 
 let ws: WebSocket;
-let lastGameState: any = null;
 
 fetch('/config.json').then(config => {
   config.json().then(json => {
@@ -31,8 +32,9 @@ fetch('/config.json').then(config => {
         let handlePayload = (payload: ServerMessage) => {
           switch (payload.type) {
             case 'GAME_':
-              lastGameState = { ...lastGameState, ...payload.game};
-              game.display({state: lastGameState});
+              if (payload.game) {
+                predictiveRenderer.handleServerUpdate(payload.game);
+              }
               break;
             case 'QU_':
               queue.update(payload.queue);

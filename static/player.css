@@ -11,22 +11,85 @@
 }
 
 .btn-arrow {
-  padding: 5px;
-  font-size: 40px;
-  width: 50px;
-  height: 50px;
+  padding: 0;
+  width: 65px;
+  height: 65px;
   display: flex;
   align-items: center;
   justify-content: center;
+  touch-action: manipulation; /* Optimise les interactions tactiles */
+  user-select: none; /* Évite la sélection de texte */
+  position: relative;
+  cursor: pointer;
+
+  /* Effet 3D léger */
+  background: linear-gradient(145deg, #00b8ff, #007bb8);
+  box-shadow: 0 4px 8px rgba(0, 158, 223, 0.3);
+  border-radius: 50px;
+
+  /* Animation simple */
+  transition: all 0.2s ease;
 }
 
-body {
+/* Triangles CSS parfaitement centrés */
+.btn-arrow::before {
+  content: '';
+  width: 0;
+  height: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Triangle HAUT */
+.btn-arrow-up::before {
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 15px solid white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Triangle BAS */
+.btn-arrow-down::before {
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 15px solid white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Triangle GAUCHE */
+.btn-arrow-left::before {
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-right: 15px solid white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Triangle DROITE */
+.btn-arrow-right::before {
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  border-left: 15px solid white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.btn-arrow:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 4px rgba(0, 158, 223, 0.4);
+}
+
+html, body {
   background-color: black;
   overflow: hidden;
   width: 100vw;
   height: 100vh;
   box-sizing: border-box;
   font-family: Arial;
+  touch-action: manipulation; /* Autorise seulement les taps/drags */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none; /* Désactive le menu contextuel iOS */
 }
 
 .main {
@@ -120,30 +183,93 @@ body {
   }
 }
 
-.middle-arrows {
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
+/* Positionnement des boutons dans la grille 3x3 */
+.btn-arrow-up {
+  grid-column: 2; /* Colonne du milieu */
+  grid-row: 1; /* Première ligne */
+}
+
+.btn-arrow-left {
+  grid-column: 1; /* Première colonne */
+  grid-row: 2; /* Ligne du milieu */
+}
+
+.btn-arrow-right {
+  grid-column: 3; /* Troisième colonne */
+  grid-row: 2; /* Ligne du milieu */
+}
+
+.btn-arrow-down {
+  grid-column: 2; /* Colonne du milieu */
+  grid-row: 3; /* Troisième ligne */
 }
 
 .pad {
   display: flex;
   flex-direction: row;
+  gap: 100px; /* Encore plus d'espace entre le stick et les boutons */
 
-  .trackpad {
-    border: 2px solid white;
-    border-radius: 2px;
-    width: 300px;
+  .analog-stick-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; /* Pousse le stick vers la droite de son conteneur */
+  }
+
+  .analog-stick-track {
+    position: relative;
+    width: 200px;
     height: 200px;
+    border-radius: 50%;
+    border: 3px solid #009EDF;
+    background: linear-gradient(145deg, #001122, #002244);
+    box-shadow:
+      inset 0 0 20px rgba(0, 158, 223, 0.2),
+      0 0 20px rgba(0, 158, 223, 0.3);
+    touch-action: manipulation;
+    user-select: none;
+  }
+
+  .analog-stick-knob {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #00b8ff, #007bb8);
+    border: 2px solid #ffffff;
+    box-shadow:
+      0 4px 8px rgba(0, 0, 0, 0.3),
+      inset 0 2px 4px rgba(255, 255, 255, 0.2);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: box-shadow 0.1s ease;
+    cursor: pointer;
+  }
+
+  .analog-stick-knob:active {
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      inset 0 2px 4px rgba(255, 255, 255, 0.3),
+      0 0 10px rgba(0, 158, 223, 0.5);
+  }
+
+  .analog-stick-knob.dragging {
+    transition: none;
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      inset 0 2px 4px rgba(255, 255, 255, 0.3),
+      0 0 15px rgba(0, 158, 223, 0.7);
   }
 
   .buttons {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
+    width: 180px; /* Largeur réduite pour rapprocher les boutons */
+    height: 180px; /* Hauteur réduite pour rapprocher les boutons */
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; /* 3 colonnes */
+    grid-template-rows: 1fr 1fr 1fr; /* 3 lignes */
+    gap: 8px; /* Gap réduit pour rapprocher les boutons */
     align-items: center;
-    justify-content: center;
-    gap: 20px;
+    justify-items: center;
   }
 }
 
@@ -151,45 +277,48 @@ body {
   position: absolute;
   top: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 10; /* Z-index réduit pour éviter les conflits avec les boutons */
+  pointer-events: none; /* Désactive les clics sur la zone entière */
 
   & > img {
     height: 200px;
     width: auto;
     display: block;
+    pointer-events: auto; /* Réactive les clics uniquement sur l'image */
   }
 }
 
-/* Rotation de l'interface en mode portrait */
-@media (orientation: portrait) {
+/* Cache le lien GitHub sur mobile */
+@media (max-width: 768px), (pointer: coarse) {
+  .fork-me {
+    display: none !important;
+  }
+}
+
+/* Rotation de l'interface en mode portrait mobile */
+@media (orientation: portrait) and (max-width: 768px) {
   .main {
-    position: fixed;
-    top: -100vw;
-    left: 0;
+    transform: rotate(90deg);
+    transform-origin: center center;
     width: 100vh;
     height: 100vw;
-    transform: rotate(90deg);
-    transform-origin: left bottom;
-    /* Pour éviter les débordements */
-    overflow: auto;
-    background: inherit;
-    z-index: 10;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-top: -50vw;
+    margin-left: -50vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
   }
 
   body {
     overflow: hidden;
   }
 
-  .fork-me{
-    transform: rotate(90deg);
-    transform-origin: left bottom;
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    top: auto;
-    left: auto;
-    z-index: 1000;
-    /* Décaler vers le haut de la hauteur de l'image pour la rendre visible */
-    margin-bottom: 200px;
+  .fork-me {
+    display: none !important;
   }
 }
