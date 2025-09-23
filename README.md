@@ -30,7 +30,11 @@ Ce projet pousse le concept encore plus loin : jusqu'à 32 joueurs peuvent s'aff
 - **Contrôles** :
   - Utilisez le stick analogique pour déplacer votre curseur sur le plateau.
   - Utilisez les boutons directionnels pour placer des flèches (➡️) et influencer la trajectoire des souris et des chats.
-- **Objectif** : Soyez le joueur qui sauve le plus de souris en les amenant dans votre fusée, tout en perturbant les autres joueurs ! Envoyer des chats dans les fusées adverses peut aussi être une stratégie efficace.
+- **Objectif** : 
+  - Soyez le joueur qui sauve le plus de souris en les amenant dans votre fusée, tout en perturbant les autres joueurs ! 
+  - Envoyer des chats dans les fusées adverses peut aussi être une stratégie efficace.
+  - La 4e flèche posée remplace la plus ancienne (FIFO).
+  - 1 souris dans une fusée = +1 point -  1 chat dans une fusée : division des points par 2.
 
 ---
 
