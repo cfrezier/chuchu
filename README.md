@@ -153,6 +153,18 @@ ChuChu Rocket! est un jeu de puzzle multijoueur sorti sur Dreamcast en 1999. Le 
 
 ---
 
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! Pour proposer une amélioration, corriger un bug ou ajouter une fonctionnalité :
+
+- **Forkez** le dépôt sur GitHub
+- **Créez une branche** pour votre modification
+- **Ouvrez une pull request** avec une description claire
+- Respectez le style du projet (TypeScript, organisation des dossiers)
+- N’hésitez pas à ouvrir une issue pour discuter d’une idée ou d’un problème.
+
+---
+
 ## 🙏 Remerciements
 
 Un grand merci à SEGA et Sonic Team pour l'inspiration et la création de ChuChu Rocket! Si vous aimez ce projet, n'hésitez pas à contribuer ou à le partager ⭐
