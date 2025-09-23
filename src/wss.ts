@@ -24,13 +24,13 @@ const wss = () => {
           if (!allowLongServerView) {
             disconnectTimer = setTimeout(() => {
               ws.close(4000, 'Déconnexion automatique serveur après 3 minutes');
-            }, 3 * 60 * 1000);
+            }, CONFIG.SERVER_TIMEOUT);
           }
         } else {
           // Client : timer 30 min
           disconnectTimer = setTimeout(() => {
             ws.close(4000, 'Déconnexion automatique client après 30 minutes');
-          }, 30 * 60 * 1000);
+          }, CONFIG.ACTIVITY_TIMEOUT);
         }
         firstMsgReceived = true;
       }
