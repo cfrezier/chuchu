@@ -101,8 +101,8 @@ export class Game {
         player.init(this.getAvailableColorIndex());
         player.queued();
         setTimeout(() => {
-          if (this.currentStrategy instanceof StartingStrategy && this.players.length > CONFIG.MIN_PLAYERS) {
-            console.log('starting game execution...')
+          if (this.currentStrategy instanceof StartingStrategy && this.players.length >= CONFIG.MIN_PLAYERS) {
+            console.log('Launching game...');
             this.size();
             this.currentStrategy = StrategyFactory.next(this.currentStrategy, this.players);
             this.queue.doneWaiting();
@@ -230,8 +230,10 @@ export class Game {
     if (this.currentStrategy.hasEnded()) {
       // Vérifier le nombre de joueurs connectés
       const connectedPlayers = this.players.filter(p => p.connected);
+      console.log(connectedPlayers, '<' , CONFIG.MIN_PLAYERS);
       if (connectedPlayers.length < CONFIG.MIN_PLAYERS) {
         // Pas assez de joueurs, revenir à la stratégie d'attente
+        console.log('Waiting for players...');
         this.size();
         this.currentStrategy = new StartingStrategy();
         this.queue.sendQueueUpdate();
@@ -240,6 +242,7 @@ export class Game {
         console.log('Pas assez de joueurs, retour à l’attente.');
       } else {
         // Nouvelle stratégie avec tous les joueurs connectés
+        console.log('Launching game...');
         this.currentStrategy.reward(this.players);
         this.size();
         this.currentStrategy = StrategyFactory.next(this.currentStrategy, connectedPlayers);
