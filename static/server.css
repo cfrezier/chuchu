@@ -172,3 +172,14 @@ h1 {
 .queue-time.header {
     color: #009EDF;
 }
+
+.draw.scrollable {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.highscore.scrollable {
+  flex: 2;
+  min-height: 0;
+  overflow-y: auto;
+}
