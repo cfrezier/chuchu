@@ -22,6 +22,18 @@ Ce projet pousse le concept encore plus loin : jusqu'à 32 joueurs peuvent s'aff
 
 ---
 
+## 🕹️ How to play / Comment jouer
+
+- **But du jeu** : Placez des flèches sur le plateau pour guider les souris (ChuChus 🐭) vers votre fusée 🚀 tout en évitant les chats (KapuKapus 🐱).
+- **Rejoindre une partie** :
+  - Scannez le QRCode affiché sur l'écran principal pour rejoindre rapidement, avec votre mobile.
+- **Contrôles** :
+  - Utilisez le stick analogique pour déplacer votre curseur sur le plateau.
+  - Utilisez les boutons directionnels pour placer des flèches (➡️) et influencer la trajectoire des souris et des chats.
+- **Objectif** : Soyez le joueur qui sauve le plus de souris en les amenant dans votre fusée, tout en perturbant les autres joueurs ! Envoyer des chats dans les fusées adverses peut aussi être une stratégie efficace.
+
+---
+
 ## 🎮 Présentation
 
 ChuChuV2 est une réinterprétation fidèle et collaborative du jeu de puzzle/arcade "ChuChu Rocket!", développé à l'origine par Sonic Team et édité par SEGA sur Dreamcast en 1999. Dans ce jeu, vous devez guider des souris (les ChuChus 🐭) vers leur fusée 🚀 tout en évitant les chats (les KapuKapus 🐱), en plaçant des flèches ➡️ sur le plateau pour influencer leur trajectoire. Un immense merci à SEGA et Sonic Team pour ce concept génial et intemporel !
