@@ -18,4 +18,4 @@ spec:
   secretName: chuchu-tls
   subject:
     organizationalUnits:
-      - provoly
+      - pole-edition
